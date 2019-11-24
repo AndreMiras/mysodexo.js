@@ -98,7 +98,6 @@ describe('login', () => {
     jest.unmock('request');
     const email = 'foo@bar.com';
     const password = 'password';
-    const jsonData = {};
     const expectedCookieJar = {};
     const expectedAccountInfo = {foo: 'bar'};
     jest.doMock('request', () => {

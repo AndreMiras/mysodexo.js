@@ -25,8 +25,8 @@ lint: install
 docker/build:
 	docker build --cache-from=$(DOCKER_IMAGE) --tag=$(DOCKER_IMAGE) .
 
-docker/run/test:
-	docker run -it --rm $(DOCKER_IMAGE) make test
+docker/run/make/%:
+	docker run -it --rm $(DOCKER_IMAGE) make $*
 
 docker/run/shell:
 	docker run -it --rm $(DOCKER_IMAGE)

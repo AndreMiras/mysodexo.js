@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 
- - Setup TravisCI over Docker
+ - setup TravisCI over Docker
+ - enable linting
 
 ## [2019.11.23]
 

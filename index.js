@@ -15,8 +15,8 @@ const DEFAULT_OS = 0;
 
 const CERT_FILENAME = "sodexows.mo2o.com_client-android.crt.pem";
 const KEY_FILENAME = 'sodexows.mo2o.com_client-android.key.pem';
-certFilePath = path.resolve(__dirname, CERT_FILENAME);
-keyFilePath = path.resolve(__dirname, KEY_FILENAME);
+const certFilePath = path.resolve(__dirname, CERT_FILENAME);
+const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
 
 
 const getFullEndpointUrl = (endpoint, lang) => {
@@ -95,7 +95,7 @@ const getCards = (cookieJar, dni, callback) => {
 const getDetailCard = (cookieJar, cardNumber, callback) => {
   const endpoint = GET_DETAIL_CARD_ENDPOINT;
   const jsonData = { cardNumber };
-  json_response = sessionPost(cookieJar, endpoint, jsonData, (response) => {
+  sessionPost(cookieJar, endpoint, jsonData, (response) => {
     const { cardDetail } = response;
     callback(cardDetail);
   });
@@ -113,6 +113,7 @@ const getClearPin = (cookieJar, cardNumber, callback) => {
   });
 }
 
+/* eslint-disable no-console */
 const main = () => {
   const email = process.env.EMAIL;
   const password = process.env.PASSWORD;
@@ -138,6 +139,7 @@ const main = () => {
   };
   login(email, password, loginCallback);
 }
+/* eslint-enable no-console */
 
 if (typeof require !== 'undefined' && require.main === module) {
   main();
