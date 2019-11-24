@@ -2,59 +2,63 @@ const assert = require('assert');
 const rewire = require('rewire');
 
 
-test('getFullEndpointUrl', () => {
-  const index = rewire('./index.js');
-  const getFullEndpointUrl = index.__get__('getFullEndpointUrl');
-  const endpoint = 'foo';
-  const lang = 'es';
-  const expected = 'https://sodexows.mo2o.com/es/foo';
-  expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
+describe('getFullEndpointUrl', () => {
+  it('base case', () => {
+    const index = rewire('./index.js');
+    const getFullEndpointUrl = index.__get__('getFullEndpointUrl');
+    const endpoint = 'foo';
+    const lang = 'es';
+    const expected = 'https://sodexows.mo2o.com/es/foo';
+    expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
+  });
+
+  it('removes leading slashes', () => {
+    const index = rewire('./index.js');
+    const getFullEndpointUrl = index.__get__('getFullEndpointUrl');
+    const endpoint = '//foo/bar/';
+    const lang = 'en';
+    const expected = 'https://sodexows.mo2o.com/en/foo/bar/';
+    expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
+  });
 });
 
-test('getFullEndpointUrl, removes leading slashes', () => {
-  const index = rewire('./index.js');
-  const getFullEndpointUrl = index.__get__('getFullEndpointUrl');
-  const endpoint = '//foo/bar/';
-  const lang = 'en';
-  const expected = 'https://sodexows.mo2o.com/en/foo/bar/';
-  expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
-});
+describe('handleCodeMsg', () => {
+  it('passes silently if no error', () => {
+    const index = rewire('./index.js');
+    const handleCodeMsg = index.__get__('handleCodeMsg');
+    const jsonResponse = {
+      code: 100,
+      msg: "OK"
+    };
+    const expected = undefined;
+    expect(handleCodeMsg(jsonResponse)).toBe(expected);
+  });
 
-test('handleCodeMsg, passes silently if no error', () => {
-  const index = rewire('./index.js');
-  const handleCodeMsg = index.__get__('handleCodeMsg');
-  const jsonResponse = {
-    code: 100,
-    msg: "OK"
-  };
-  const expected = undefined;
-  expect(handleCodeMsg(jsonResponse)).toBe(expected);
-});
+  it('raises unmatching code', () => {
+    const index = rewire('./index.js');
+    const handleCodeMsg = index.__get__('handleCodeMsg');
+    const jsonResponse = {
+      code: 101,
+      msg: "OK"
+    };
+    const expected = assert.AssertionError;
+    expect(() => {
+      handleCodeMsg(jsonResponse)
+    }).toThrow(expected);
+  });
 
-test('handleCodeMsg, raises unmatching code', () => {
-  const index = rewire('./index.js');
-  const handleCodeMsg = index.__get__('handleCodeMsg');
-  const jsonResponse = {
-    code: 101,
-    msg: "OK"
-  };
-  const expected = assert.AssertionError;
-  expect(() => {
-    handleCodeMsg(jsonResponse)
-  }).toThrow(expected);
-});
-
-test('handleCodeMsg, raises unmatching msg', () => {
-  const index = rewire('./index.js');
-  const handleCodeMsg = index.__get__('handleCodeMsg');
-  const jsonResponse = {
-    code: 100,
-    msg: "Error"
-  };
-  const expected = assert.AssertionError;
-  expect(() => {
-    handleCodeMsg(jsonResponse)
-  }).toThrow(expected);
+  it('raises unmatching msg', () => {
+    const index = rewire('./index.js');
+    const handleCodeMsg = index.__get__('handleCodeMsg');
+    const jsonResponse = {
+      code: 100,
+      msg: "Error"
+    };
+    const expected = assert.AssertionError;
+    expect(() => {
+      handleCodeMsg(jsonResponse)
+    }).toThrow(expected);
+  });
 });
 
 describe('sessionPost', () => {
@@ -98,7 +102,6 @@ describe('login', () => {
     jest.unmock('request');
     const email = 'foo@bar.com';
     const password = 'password';
-    const jsonData = {};
     const expectedCookieJar = {};
     const expectedAccountInfo = {foo: 'bar'};
     jest.doMock('request', () => {

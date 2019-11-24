@@ -1,0 +1,13 @@
+# custom
+*.swp
+
+# dependencies
+/node_modules
+
+# production
+/build
+
+# misc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

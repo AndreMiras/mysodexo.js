@@ -1,4 +1,4 @@
-# Mysodexo Python client
+# Mysodexo JavaScript client
 
 [![Build Status](https://travis-ci.com/AndreMiras/mysodexojs.svg?branch=develop)](https://travis-ci.com/AndreMiras/mysodexojs)
 [![npm version](https://badge.fury.io/js/mysodexo.svg)](https://badge.fury.io/js/mysodexo)

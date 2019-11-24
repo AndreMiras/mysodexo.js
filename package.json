@@ -1,13 +1,14 @@
 {
   "name": "mysodexo",
-  "version": "2019.11.23",
+  "version": "2019.11.24",
   "description": "Client for Mysodexo API",
   "main": "index.js",
   "files": [
     "sodexows.mo2o.com_client-android.*.pem"
   ],
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "lint": "./node_modules/.bin/eslint *.js"
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,11 @@
   },
   "homepage": "https://github.com/AndreMiras/mysodexojs",
   "devDependencies": {
+    "eslint-plugin-jest": "^23.0.4",
     "jest": "^24.9.0",
     "rewire": "^4.0.1"
+  },
+  "dependencies": {
+    "request": "^2.88.0"
   }
 }
