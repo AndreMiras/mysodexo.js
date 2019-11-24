@@ -1,11 +1,6 @@
 DOCKER_IMAGE=andremiras/mysodexojs
 SYSTEM_DEPENDENCIES= \
-	build-essential \
-	curl \
-	git \
-	make \
-	nodejs \
-	python3
+	nodejs
 
 system_dependencies:
 	sudo apt update -qq > /dev/null && sudo apt -qq install --yes --no-install-recommends $(SYSTEM_DEPENDENCIES)
