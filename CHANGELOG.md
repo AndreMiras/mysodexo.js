@@ -1,5 +1,9 @@
 # Change Log
 
+## [Unreleased]
+
+ - parametrized tests, refs #1
+
 ## [2019.11.24]
 
  - setup TravisCI over Docker

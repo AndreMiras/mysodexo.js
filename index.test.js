@@ -3,22 +3,24 @@ const rewire = require('rewire');
 
 
 describe('getFullEndpointUrl', () => {
-  it('base case', () => {
+  const testHelper = (endpoint, lang, expected) => {
     const index = rewire('./index.js');
     const getFullEndpointUrl = index.__get__('getFullEndpointUrl');
+    expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
+  };
+
+  it('base case', () => {
     const endpoint = 'foo';
     const lang = 'es';
     const expected = 'https://sodexows.mo2o.com/es/foo';
-    expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
+    testHelper(endpoint, lang, expected);
   });
 
   it('removes leading slashes', () => {
-    const index = rewire('./index.js');
-    const getFullEndpointUrl = index.__get__('getFullEndpointUrl');
     const endpoint = '//foo/bar/';
     const lang = 'en';
     const expected = 'https://sodexows.mo2o.com/en/foo/bar/';
-    expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
+    testHelper(endpoint, lang, expected);
   });
 });
 
@@ -34,26 +36,16 @@ describe('handleCodeMsg', () => {
     expect(handleCodeMsg(jsonResponse)).toBe(expected);
   });
 
-  it('raises unmatching code', () => {
+  it.each([
+    [null, 'OK'],
+    [101, 'OK'],
+    [100, null],
+    [100, 'Error'],
+    [null, null]
+  ])('raises on unmatching code (%s) or msg (%s)', (code, msg) => {
     const index = rewire('./index.js');
     const handleCodeMsg = index.__get__('handleCodeMsg');
-    const jsonResponse = {
-      code: 101,
-      msg: "OK"
-    };
-    const expected = assert.AssertionError;
-    expect(() => {
-      handleCodeMsg(jsonResponse)
-    }).toThrow(expected);
-  });
-
-  it('raises unmatching msg', () => {
-    const index = rewire('./index.js');
-    const handleCodeMsg = index.__get__('handleCodeMsg');
-    const jsonResponse = {
-      code: 100,
-      msg: "Error"
-    };
+    const jsonResponse = { code, msg };
     const expected = assert.AssertionError;
     expect(() => {
       handleCodeMsg(jsonResponse)
