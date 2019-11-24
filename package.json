@@ -27,5 +27,8 @@
     "eslint-plugin-jest": "^23.0.4",
     "jest": "^24.9.0",
     "rewire": "^4.0.1"
+  },
+  "dependencies": {
+    "request": "^2.88.0"
   }
 }
