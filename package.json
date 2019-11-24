@@ -1,0 +1,29 @@
+{
+  "name": "mysodexo",
+  "version": "2019.11.23",
+  "description": "Client for Mysodexo API",
+  "main": "index.js",
+  "files": [
+    "sodexows.mo2o.com_client-android.*.pem"
+  ],
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/AndreMiras/mysodexojs.git"
+  },
+  "keywords": [
+    "mysodexo"
+  ],
+  "author": "Andre Miras",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AndreMiras/mysodexojs/issues"
+  },
+  "homepage": "https://github.com/AndreMiras/mysodexojs",
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "rewire": "^4.0.1"
+  }
+}
