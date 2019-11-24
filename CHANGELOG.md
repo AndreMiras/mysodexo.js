@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [2019.11.24]
 
  - setup TravisCI over Docker
  - enable linting
