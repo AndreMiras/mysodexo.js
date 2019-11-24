@@ -3,7 +3,7 @@ SYSTEM_DEPENDENCIES= \
 	nodejs
 
 system_dependencies:
-	sudo apt update -qq > /dev/null && sudo apt -qq install --yes --no-install-recommends $(SYSTEM_DEPENDENCIES)
+	apt update -qq > /dev/null && apt -qq install --yes --no-install-recommends $(SYSTEM_DEPENDENCIES)
 
 install:
 	yarn install

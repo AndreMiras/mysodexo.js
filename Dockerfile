@@ -45,9 +45,9 @@ USER ${USER}
 WORKDIR ${WORK_DIR}
 
 # install system dependencies
-COPY Makefile /tmp/
-RUN sudo make -f /tmp/Makefile system_dependencies && \
-    sudo rm /tmp/Makefile && \
+COPY Makefile package.json ${WORK_DIR}/
+RUN sudo make system_dependencies && \
+    make install && \
     sudo rm -rf /var/lib/apt/lists/*
 
 COPY . ${WORK_DIR}
