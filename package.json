@@ -7,8 +7,9 @@
     "sodexows.mo2o.com_client-android.*.pem"
   ],
   "scripts": {
-    "test": "jest",
-    "lint": "./node_modules/.bin/eslint *.js"
+    "test": "jest --coverage",
+    "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "lint": "eslint *.js"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "rewire": "^4.0.1"
   },
   "dependencies": {
+    "coveralls": "^3.0.8",
     "request": "^2.88.0"
   }
 }

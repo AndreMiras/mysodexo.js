@@ -3,6 +3,7 @@
 ## [Unreleased]
 
  - parametrized tests, refs #1
+ - coverage testing, refs #2
 
 ## [2019.11.24]
 
