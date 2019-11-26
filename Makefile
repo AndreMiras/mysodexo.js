@@ -2,7 +2,7 @@ DOCKER_IMAGE=andremiras/mysodexojs
 SYSTEM_DEPENDENCIES= \
 	nodejs
 ifdef CI
-YARN_TEST=test-coveralls
+YARN_TEST=test:coveralls
 else
 YARN_TEST=test
 endif
@@ -18,6 +18,14 @@ clean:
 
 test: install
 	yarn $(YARN_TEST)
+
+test/debug: install
+	@echo chrome://inspect
+	yarn test:debug
+
+run: install
+	@echo chrome://inspect
+	yarn run:debug
 
 lint: install
 	yarn lint

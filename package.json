@@ -8,7 +8,9 @@
   ],
   "scripts": {
     "test": "jest --coverage",
-    "test-coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "test:coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
+    "test:debug": "node --inspect node_modules/.bin/jest --runInBand index.test.js",
+    "run:debug": "node --inspect index.js",
     "lint": "eslint *.js"
   },
   "repository": {
