@@ -177,3 +177,88 @@ describe('getCards', () => {
     expect(getCards(cookieJar, dni, callback)).toBe(undefined);
   });
 });
+
+describe('getDetailCard', () => {
+  it('base', (done) => {
+    jest.resetModules();
+    jest.unmock('request');
+    const cookieJar = {};
+    const cardNumber = '1234567897901234';
+    const expectedCardDetail = {
+      idCard: 123456,
+      cardNumber: '1234567897901234',
+      idCardPayProvider: 0,
+      idBeneficiary: 0,
+      idCardStatus: '30',
+      employeeName: 'ANDRE MIRAS',
+      printerName: 'ANDRE MIRAS',
+      legalNumber: '123456789',
+      cardBalance: 13.37,
+      caducityDateCard: '2022-12-31',
+      cardStatus: 'ACTIVA',
+      idCompany: 10183,
+      faceValue: 0,
+      creationDate: '',
+      idAddress: 0,
+      addressReference: '',
+      idCustomize: 0,
+      perfil: '',
+      description: '',
+      itemType: 0,
+      idProduct: 33,
+      idContract: 20070,
+      pan: '459340******4428',
+      cardStatusDate: '2018-12-04',
+      accountId: '',
+      limitPassed: 0,
+      idProfile: 0,
+      maxValueOfConsum: 0,
+      limiteConsumo: 0,
+      programFis: 'SDSC',
+      hasChip: 1,
+      balanceFis: {
+        saldoDisponible: 13.37,
+        apuntesPendientes: 0
+      },
+      arrFisToChange: [
+        {
+          key: 'BLOCKED',
+          value: '60'
+        }
+      ],
+      idFisToChange: '60',
+      blockedAmount: '',
+      totalBalance: '',
+      maxLoad: 0,
+      maxUsesDay: 0,
+      infoBalanceRestriction: '',
+      dayRestriction: '',
+      useOnHoliday: '',
+    };
+    jest.doMock('request', () => {
+      return {
+        post: jest.fn((req, callback) => {
+          const error = null;
+          const response = {
+            statusCode: 200,
+          };
+          const body = {
+            code: 100,
+            msg: 'OK',
+            response: {
+              cardDetail: expectedCardDetail
+            }
+          };
+          callback(error, response, body)
+        }),
+      }
+    });
+    const index = require('./index.js');
+    const getDetailCard = index.getDetailCard;
+    const callback = (cardList) => {
+      expect(cardList).toEqual(expectedCardDetail);
+      done();
+    };
+    expect(getDetailCard(cookieJar, cardNumber, callback)).toBe(undefined);
+  });
+});
