@@ -6,6 +6,7 @@
  - coverage testing, refs #2
  - unit test getCards(), refs #3
  - unit test getDetailCard(), refs #4
+ - unit test getClearPin(), refs #5
 
 ## [2019.11.24]
 

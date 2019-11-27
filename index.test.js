@@ -262,3 +262,40 @@ describe('getDetailCard', () => {
     expect(getDetailCard(cookieJar, cardNumber, callback)).toBe(undefined);
   });
 });
+
+describe('getClearPin', () => {
+  it('base', (done) => {
+    jest.resetModules();
+    jest.unmock('request');
+    const cookieJar = {};
+    const cardNumber = '1234567897901234';
+    const expectedPin = '1234';
+    jest.doMock('request', () => {
+      return {
+        post: jest.fn((req, callback) => {
+          const error = null;
+          const response = {
+            statusCode: 200,
+          };
+          const body = {
+            code: 100,
+            msg: 'OK',
+            response: {
+              clearPin: {
+                pin: expectedPin
+              }
+            }
+          };
+          callback(error, response, body)
+        }),
+      }
+    });
+    const index = require('./index.js');
+    const getClearPin = index.getClearPin;
+    const callback = (pin) => {
+      expect(pin).toEqual(expectedPin);
+      done();
+    };
+    expect(getClearPin(cookieJar, cardNumber, callback)).toBe(undefined);
+  });
+});
