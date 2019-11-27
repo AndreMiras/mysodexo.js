@@ -54,7 +54,7 @@ describe('handleCodeMsg', () => {
 });
 
 describe('sessionPost', () => {
-  it('sessionPost', (done) => {
+  it('base', (done) => {
     jest.resetModules();
     const endpoint = '/foo/bar';
     const jsonData = {};
@@ -89,7 +89,7 @@ describe('sessionPost', () => {
 });
 
 describe('login', () => {
-  it('login', (done) => {
+  it('base', (done) => {
     jest.resetModules();
     jest.unmock('request');
     const email = 'foo@bar.com';
@@ -110,7 +110,7 @@ describe('login', () => {
           };
           callback(error, response, body)
         }),
-        jar: () => { return {} }
+        jar: () => { return expectedCookieJar; }
       }
     });
     const index = require('./index.js');
@@ -122,5 +122,58 @@ describe('login', () => {
       done();
     };
     expect(login(email, password, callback)).toBe(undefined);
+  });
+});
+
+describe('getCards', () => {
+  it('base', (done) => {
+    jest.resetModules();
+    jest.unmock('request');
+    const cookieJar = {};
+    const dni = '123456789';
+    const expectedCardList = [{
+      service: "Restaurante Pass",
+      idCard: 219999,
+      cardNumber: "1234567897901234",
+      cardStatus: "ACTIVA",
+      idCardStatus: "30",
+      pan: "123456******1234",
+      caducityDateCard: "",
+      idProduct: 33,
+      programFis: "",
+      hasChip: 1,
+      idCompany: 10183,
+      arrFisToChange: [{
+        key: "BLOCKED",
+        value: "60"
+      }],
+      idFisToChange: "60",
+      fisToChangeState: "BLOCKED"
+    }];
+    jest.doMock('request', () => {
+      return {
+        post: jest.fn((req, callback) => {
+          const error = null;
+          const response = {
+            statusCode: 200,
+          };
+          const body = {
+            code: 100,
+            msg: 'OK',
+            response: {
+              listCard: expectedCardList
+            }
+          };
+          callback(error, response, body)
+        }),
+      }
+    });
+    const index = require('./index.js');
+    const getCards = index.getCards;
+    const callback = (cardList) => {
+      expect(cardList).toEqual(expectedCardList);
+      done();
+    };
+    expect(getCards(cookieJar, dni, callback)).toBe(undefined);
   });
 });
