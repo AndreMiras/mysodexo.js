@@ -53,28 +53,39 @@ describe('handleCodeMsg', () => {
   });
 });
 
+const mockRequestPost = (responseBody) => jest.fn(
+  (req, callback) => {
+    const error = null;
+    const response = {
+      statusCode: 200,
+    };
+    callback(error, response, responseBody)
+  }
+);
+
+const mockRequest = (post, jar) => {
+  jest.doMock('request', () => {
+    jar = typeof jar !== 'undefined' ? jar : {};
+    return {
+      post,
+      jar,
+    }
+  });
+};
+
 describe('sessionPost', () => {
   it('base', (done) => {
     jest.resetModules();
     const endpoint = '/foo/bar';
     const jsonData = {};
     const expected = {};
-    jest.doMock('request', () => {
-      return {
-        post: jest.fn((req, callback) => {
-          const error = null;
-          const response = {
-            statusCode: 200,
-          };
-          const body = {
-            code: 100,
-            msg: 'OK',
-            response: {}
-          };
-          callback(error, response, body)
-        }),
-      }
-    });
+    const responseBody = {
+      code: 100,
+      msg: 'OK',
+      response: {},
+    };
+    const post = mockRequestPost(responseBody);
+    mockRequest(post);
     // const index = rewire('./index.js');
     // const sessionPost = index.__get__('sessionPost');
     const index = require('./index.js');
@@ -96,23 +107,14 @@ describe('login', () => {
     const password = 'password';
     const expectedCookieJar = {};
     const expectedAccountInfo = {foo: 'bar'};
-    jest.doMock('request', () => {
-      return {
-        post: jest.fn((req, callback) => {
-          const error = null;
-          const response = {
-            statusCode: 200,
-          };
-          const body = {
-            code: 100,
-            msg: 'OK',
-            response: expectedAccountInfo
-          };
-          callback(error, response, body)
-        }),
-        jar: () => { return expectedCookieJar; }
-      }
-    });
+    const responseBody = {
+      code: 100,
+      msg: 'OK',
+      response: expectedAccountInfo,
+    };
+    const post = mockRequestPost(responseBody);
+    const jar = () => { return expectedCookieJar; };
+    mockRequest(post, jar);
     const index = require('./index.js');
     const login = index.login;
     const callback = (response) => {
@@ -150,24 +152,15 @@ describe('getCards', () => {
       idFisToChange: "60",
       fisToChangeState: "BLOCKED"
     }];
-    jest.doMock('request', () => {
-      return {
-        post: jest.fn((req, callback) => {
-          const error = null;
-          const response = {
-            statusCode: 200,
-          };
-          const body = {
-            code: 100,
-            msg: 'OK',
-            response: {
-              listCard: expectedCardList
-            }
-          };
-          callback(error, response, body)
-        }),
-      }
-    });
+    const responseBody = {
+      code: 100,
+      msg: 'OK',
+      response: {
+        listCard: expectedCardList,
+      },
+    };
+    const post = mockRequestPost(responseBody);
+    mockRequest(post);
     const index = require('./index.js');
     const getCards = index.getCards;
     const callback = (cardList) => {
@@ -235,24 +228,15 @@ describe('getDetailCard', () => {
       dayRestriction: '',
       useOnHoliday: '',
     };
-    jest.doMock('request', () => {
-      return {
-        post: jest.fn((req, callback) => {
-          const error = null;
-          const response = {
-            statusCode: 200,
-          };
-          const body = {
-            code: 100,
-            msg: 'OK',
-            response: {
-              cardDetail: expectedCardDetail
-            }
-          };
-          callback(error, response, body)
-        }),
-      }
-    });
+    const responseBody = {
+      code: 100,
+      msg: 'OK',
+      response: {
+        cardDetail: expectedCardDetail
+      },
+    };
+    const post = mockRequestPost(responseBody);
+    mockRequest(post);
     const index = require('./index.js');
     const getDetailCard = index.getDetailCard;
     const callback = (cardList) => {
@@ -270,26 +254,17 @@ describe('getClearPin', () => {
     const cookieJar = {};
     const cardNumber = '1234567897901234';
     const expectedPin = '1234';
-    jest.doMock('request', () => {
-      return {
-        post: jest.fn((req, callback) => {
-          const error = null;
-          const response = {
-            statusCode: 200,
-          };
-          const body = {
-            code: 100,
-            msg: 'OK',
-            response: {
-              clearPin: {
-                pin: expectedPin
-              }
-            }
-          };
-          callback(error, response, body)
-        }),
-      }
-    });
+    const responseBody = {
+      code: 100,
+      msg: 'OK',
+      response: {
+        clearPin: {
+          pin: expectedPin,
+        },
+      },
+    };
+    const post = mockRequestPost(responseBody);
+    mockRequest(post);
     const index = require('./index.js');
     const getClearPin = index.getClearPin;
     const callback = (pin) => {

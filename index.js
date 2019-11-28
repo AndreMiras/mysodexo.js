@@ -22,7 +22,7 @@ const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
 const getFullEndpointUrl = (endpoint, lang) => {
   endpoint = endpoint.replace(/^\/+/, "");
   return `${BASE_URL}/${lang}/${endpoint}`;
-}
+};
 
 /*
  * Raises an error if any in the `jsonResponse`.
@@ -31,7 +31,7 @@ const handleCodeMsg = (jsonResponse) => {
   const { code, msg } = jsonResponse;
   assert(code === JSON_RESPONSE_OK_CODE, [code, msg]);
   assert(msg === JSON_RESPONSE_OK_MSG, [code, msg]);
-}
+};
 
 /*
  * Posts `jsonData` to `endpoint` using the `cookieJar`.
@@ -54,7 +54,7 @@ const sessionPost = (cookieJar, endpoint, jsonData, callback) => {
     handleCodeMsg(body);
     callback(body.response);
   });
-}
+};
 
 /*
  * Logins with credentials and returns session and account info.
@@ -75,7 +75,7 @@ const login = (email, password, callback) => {
     };
     callback(data);
   });
-}
+};
 
 /*
  * Returns cards list and details using the cookie provided.
@@ -87,7 +87,7 @@ const getCards = (cookieJar, dni, callback) => {
     const cardList = response.listCard;
     callback(cardList);
   });
-}
+};
 
 /*
  * Returns card details.
@@ -99,7 +99,7 @@ const getDetailCard = (cookieJar, cardNumber, callback) => {
     const { cardDetail } = response;
     callback(cardDetail);
   });
-}
+};
 
 /*
  * Returns card pin.
@@ -111,16 +111,21 @@ const getClearPin = (cookieJar, cardNumber, callback) => {
     const { pin } = response.clearPin;
     callback(pin);
   });
-}
+};
 
 /* eslint-disable no-console */
-const main = () => {
+/*
+ * Given environment variable `EMAIL` and `PASSWORD` retries card details
+ * and triggers `mainCallback`.
+ */
+const main = (mainCallback) => {
   const email = process.env.EMAIL;
   const password = process.env.PASSWORD;
   const getDetailCardCallback = (cardDetail) => {
     const { cardNumber } = cardDetail;
     console.log(`details ${cardNumber}:`);
     console.log(JSON.stringify(cardDetail, null, '  '));
+    typeof mainCallback == "function" && mainCallback();
   };
   const getCardsCallback = (cookieJar) => (cardList) => {
     const cards = cardList;
@@ -138,11 +143,11 @@ const main = () => {
     getCards(cookieJar, dni, getCardsCallback(cookieJar));
   };
   login(email, password, loginCallback);
-}
+};
 /* eslint-enable no-console */
 
 if (typeof require !== 'undefined' && require.main === module) {
   main();
 }
 
-module.exports = { sessionPost, login, getCards, getDetailCard, getClearPin };
+module.exports = { sessionPost, login, getCards, getDetailCard, getClearPin, main };
