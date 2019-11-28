@@ -30,7 +30,7 @@ describe('handleCodeMsg', () => {
     const handleCodeMsg = index.__get__('handleCodeMsg');
     const jsonResponse = {
       code: 100,
-      msg: "OK"
+      msg: 'OK'
     };
     const expected = undefined;
     expect(handleCodeMsg(jsonResponse)).toBe(expected);
@@ -54,7 +54,7 @@ describe('handleCodeMsg', () => {
 });
 
 const mockRequestPost = (responseBody) => jest.fn(
-  (req, callback) => {
+  (options, callback) => {
     const error = null;
     const response = {
       statusCode: 200,
@@ -99,6 +99,58 @@ describe('sessionPost', () => {
   });
 });
 
+const loginResponse = {
+  code: 100,
+  msg: 'OK',
+  response: {
+    beneficiaryCode: 12345,
+    companyId: 12345,
+    name: 'Name',
+    surname1: 'Surname1',
+    surname2: 'Surname2',
+    dni: '123456789',
+    email: 'foo@bar.com',
+    password: '',
+    dateBorn: '1987-01-23',
+    gender: 0,
+    mobile: '0012345678901',
+    typeAddressJob: 0,
+    nameAddressJob: '',
+    complementaryDataJob: '',
+    postalCodeJob: '12345',
+    stateJob: 0,
+    cityJob: 0,
+    activated: 1,
+    dateUp: '2017-12-34',
+    internalCode: 2,
+    newsletter: 0,
+    cardCode4: '1234',
+    securityDate: '31121987',
+    matricula: '',
+    acepto_terminos: 1,
+    changePassword: 0,
+    userData: {
+      userId: 12345,
+      nameAddress: '',
+      typeAddress: 0,
+      complementaryData: '',
+      postalCode: '',
+      state: 0,
+      city: 0,
+      typeWorkDay: 0,
+      departmentId: 0,
+      functionId: 0,
+      netIncomeId: 0,
+      hasChildren: 0
+    },
+    interestCollection: [
+      {
+        idInteres: 0
+      }
+    ]
+  }
+};
+
 describe('login', () => {
   it('base', (done) => {
     jest.resetModules();
@@ -106,13 +158,7 @@ describe('login', () => {
     const email = 'foo@bar.com';
     const password = 'password';
     const expectedCookieJar = {};
-    const expectedAccountInfo = {foo: 'bar'};
-    const responseBody = {
-      code: 100,
-      msg: 'OK',
-      response: expectedAccountInfo,
-    };
-    const post = mockRequestPost(responseBody);
+    const post = mockRequestPost(loginResponse);
     const jar = () => { return expectedCookieJar; };
     mockRequest(post, jar);
     const index = require('./index.js');
@@ -120,12 +166,38 @@ describe('login', () => {
     const callback = (response) => {
       const { cookieJar, accountInfo } = response;
       expect(cookieJar).toEqual(expectedCookieJar);
-      expect(accountInfo).toEqual(expectedAccountInfo);
+      expect(accountInfo).toEqual(loginResponse.response);
       done();
     };
     expect(login(email, password, callback)).toBe(undefined);
   });
 });
+
+const getCardsResponse = {
+  code: 100,
+  msg: 'OK',
+  response: {
+    listCard: [{
+      service: 'Restaurante Pass',
+      idCard: 219999,
+      cardNumber: '1234567897901234',
+      cardStatus: 'ACTIVA',
+      idCardStatus: '30',
+      pan: '123456******1234',
+      caducityDateCard: '',
+      idProduct: 33,
+      programFis: '',
+      hasChip: 1,
+      idCompany: 10183,
+      arrFisToChange: [{
+        key: 'BLOCKED',
+        value: '60'
+      }],
+      idFisToChange: '60',
+      fisToChangeState: 'BLOCKED'
+    }],
+  },
+};
 
 describe('getCards', () => {
   it('base', (done) => {
@@ -133,63 +205,35 @@ describe('getCards', () => {
     jest.unmock('request');
     const cookieJar = {};
     const dni = '123456789';
-    const expectedCardList = [{
-      service: "Restaurante Pass",
-      idCard: 219999,
-      cardNumber: "1234567897901234",
-      cardStatus: "ACTIVA",
-      idCardStatus: "30",
-      pan: "123456******1234",
-      caducityDateCard: "",
-      idProduct: 33,
-      programFis: "",
-      hasChip: 1,
-      idCompany: 10183,
-      arrFisToChange: [{
-        key: "BLOCKED",
-        value: "60"
-      }],
-      idFisToChange: "60",
-      fisToChangeState: "BLOCKED"
-    }];
-    const responseBody = {
-      code: 100,
-      msg: 'OK',
-      response: {
-        listCard: expectedCardList,
-      },
-    };
-    const post = mockRequestPost(responseBody);
+    const post = mockRequestPost(getCardsResponse);
     mockRequest(post);
     const index = require('./index.js');
     const getCards = index.getCards;
     const callback = (cardList) => {
-      expect(cardList).toEqual(expectedCardList);
+      expect(cardList).toEqual(getCardsResponse.response.listCard);
       done();
     };
     expect(getCards(cookieJar, dni, callback)).toBe(undefined);
   });
 });
 
-describe('getDetailCard', () => {
-  it('base', (done) => {
-    jest.resetModules();
-    jest.unmock('request');
-    const cookieJar = {};
-    const cardNumber = '1234567897901234';
-    const expectedCardDetail = {
+const getDetailCardResponse = {
+  code: 100,
+  msg: 'OK',
+  response: {
+    cardDetail: {
       idCard: 123456,
       cardNumber: '1234567897901234',
       idCardPayProvider: 0,
       idBeneficiary: 0,
       idCardStatus: '30',
-      employeeName: 'ANDRE MIRAS',
-      printerName: 'ANDRE MIRAS',
+      employeeName: 'EMPLOYEE NAME',
+      printerName: 'EMPLOYEE NAME',
       legalNumber: '123456789',
       cardBalance: 13.37,
       caducityDateCard: '2022-12-31',
       cardStatus: 'ACTIVA',
-      idCompany: 10183,
+      idCompany: 12345,
       faceValue: 0,
       creationDate: '',
       idAddress: 0,
@@ -200,7 +244,7 @@ describe('getDetailCard', () => {
       itemType: 0,
       idProduct: 33,
       idContract: 20070,
-      pan: '459340******4428',
+      pan: '123456******1234',
       cardStatusDate: '2018-12-04',
       accountId: '',
       limitPassed: 0,
@@ -227,20 +271,22 @@ describe('getDetailCard', () => {
       infoBalanceRestriction: '',
       dayRestriction: '',
       useOnHoliday: '',
-    };
-    const responseBody = {
-      code: 100,
-      msg: 'OK',
-      response: {
-        cardDetail: expectedCardDetail
-      },
-    };
-    const post = mockRequestPost(responseBody);
+    },
+  },
+};
+
+describe('getDetailCard', () => {
+  it('base', (done) => {
+    jest.resetModules();
+    jest.unmock('request');
+    const cookieJar = {};
+    const cardNumber = '1234567897901234';
+    const post = mockRequestPost(getDetailCardResponse);
     mockRequest(post);
     const index = require('./index.js');
     const getDetailCard = index.getDetailCard;
     const callback = (cardList) => {
-      expect(cardList).toEqual(expectedCardDetail);
+      expect(cardList).toEqual(getDetailCardResponse.response.cardDetail);
       done();
     };
     expect(getDetailCard(cookieJar, cardNumber, callback)).toBe(undefined);
@@ -272,5 +318,60 @@ describe('getClearPin', () => {
       done();
     };
     expect(getClearPin(cookieJar, cardNumber, callback)).toBe(undefined);
+  });
+});
+
+/*
+ * Mocks different response depending on the `perUrlResponseBody` and
+ * `options.url` objects.
+ */
+const mockRequestPostPerUrl = (perUrlResponseBody) => jest.fn(
+  (options, callback) => {
+    const error = null;
+    const response = {
+      statusCode: 200,
+    };
+    const responseBody = perUrlResponseBody[options.url];
+    callback(error, response, responseBody);
+  }
+);
+
+describe('main', () => {
+  /*
+   * Rewires access to `getFullEndpointUrl`
+   */
+  const getFullEndpointUrl = (url) => {
+    const index = rewire('./index.js');
+    const lang = 'en';
+    return index.__get__('getFullEndpointUrl')(url, lang);
+  };
+
+  it('base', (done) => {
+    jest.resetModules();
+    jest.unmock('request');
+    // keeps the output clean, by mocking the `console.log()`
+    const spyLog = jest.spyOn(console, 'log').mockImplementation();
+    const loginUrl = getFullEndpointUrl('v3/connect/login');
+    const getCardsUrl = getFullEndpointUrl('v3/card/getCards');
+    const getDetailCardUrl = getFullEndpointUrl('v2/card/getDetailCard');
+    const perUrlResponseBody = {
+      [loginUrl]: loginResponse,
+      [getCardsUrl]: getCardsResponse,
+      [getDetailCardUrl]: getDetailCardResponse,
+    };
+    const post = mockRequestPostPerUrl(perUrlResponseBody);
+    const jar = () => { return {}; };
+    mockRequest(post, jar);
+    const index = require('./index.js');
+    const main = index.main;
+    const callback = () => {
+      spyLog.mockRestore();
+      expect(post.mock.calls.length).toBe(3);
+      expect(post.mock.calls[0][0].url).toBe(loginUrl);
+      expect(post.mock.calls[1][0].url).toBe(getCardsUrl);
+      expect(post.mock.calls[2][0].url).toBe(getDetailCardUrl);
+      done();
+    };
+    expect(main(callback)).toBe(undefined);
   });
 });
