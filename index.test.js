@@ -327,12 +327,8 @@ describe('getClearPin', () => {
  */
 const mockRequestPostPerUrl = (perUrlResponseBody) => jest.fn(
   (options, callback) => {
-    const error = null;
-    const response = {
-      statusCode: 200,
-    };
     const responseBody = perUrlResponseBody[options.url];
-    callback(error, response, responseBody);
+    mockRequestPost(responseBody)(options, callback);
   }
 );
 
