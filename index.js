@@ -19,10 +19,11 @@ const certFilePath = path.resolve(__dirname, CERT_FILENAME);
 const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
 
 
-const getFullEndpointUrl = (endpoint, lang) => {
-  endpoint = endpoint.replace(/^\/+/, "");
-  return `${BASE_URL}/${lang}/${endpoint}`;
-};
+const stripEndpoint = (endpoint) => (endpoint.replace(/^\/+/, ""));
+
+const getFullEndpointUrl = (endpoint, lang) => (
+  `${BASE_URL}/${lang}/${stripEndpoint(endpoint)}`
+);
 
 /*
  * Raises an error if any in the `jsonResponse`.

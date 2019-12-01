@@ -64,13 +64,13 @@ const mockRequestPost = (responseBody) => jest.fn(
 );
 
 const mockRequest = (post, jar) => {
-  jest.doMock('request', () => {
-    jar = typeof jar !== 'undefined' ? jar : {};
-    return {
+  jar = typeof jar !== 'undefined' ? jar : {};
+  jest.doMock('request', () => (
+    {
       post,
       jar,
     }
-  });
+  ));
 };
 
 describe('sessionPost', () => {
@@ -159,7 +159,7 @@ describe('login', () => {
     const password = 'password';
     const expectedCookieJar = {};
     const post = mockRequestPost(loginResponse);
-    const jar = () => { return expectedCookieJar; };
+    const jar = () => ( expectedCookieJar );
     mockRequest(post, jar);
     const index = require('./index.js');
     const login = index.login;
@@ -336,11 +336,9 @@ describe('main', () => {
   /*
    * Rewires access to `getFullEndpointUrl`
    */
-  const getFullEndpointUrl = (url) => {
-    const index = rewire('./index.js');
-    const lang = 'en';
-    return index.__get__('getFullEndpointUrl')(url, lang);
-  };
+  const getFullEndpointUrl = (url) => (
+    rewire('./index.js').__get__('getFullEndpointUrl')(url, 'en')
+  );
 
   it('base', (done) => {
     jest.resetModules();
@@ -356,7 +354,7 @@ describe('main', () => {
       [getDetailCardUrl]: getDetailCardResponse,
     };
     const post = mockRequestPostPerUrl(perUrlResponseBody);
-    const jar = () => { return {}; };
+    const jar = () => ( {} );
     mockRequest(post, jar);
     const index = require('./index.js');
     const main = index.main;
