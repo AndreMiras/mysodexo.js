@@ -19,6 +19,18 @@ const certFilePath = path.resolve(__dirname, CERT_FILENAME);
 const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
 
 
+/*
+ * Indented JSON.stringify() alias.
+ */
+const stringify = (value) => JSON.stringify(value, null, '  ');
+
+/*
+ * Logs value to console as a JSON string.
+ */
+const stringifyLog = (value) => {
+  console.log(stringify(value)); // eslint-disable-line no-console
+};
+
 const stripEndpoint = (endpoint) => (endpoint.replace(/^\/+/, ""));
 
 const getFullEndpointUrl = (endpoint, lang) => (
@@ -50,7 +62,7 @@ const sessionPost = (cookieJar, endpoint, jsonData, callback) => {
   };
   request.post(options, function (error, response, body) {
     assert(!error, error);
-    assert(response && response.statusCode == 200, JSON.stringify(response));
+    assert(response && response.statusCode == 200, stringify(response));
     handleCodeMsg(body);
     callback(body.response);
   });
@@ -113,7 +125,6 @@ const getClearPin = (cookieJar, cardNumber, callback) => {
   });
 };
 
-/* eslint-disable no-console */
 /*
  * Given environment variable `EMAIL` and `PASSWORD` retries card details
  * and triggers `mainCallback`.
@@ -123,28 +134,27 @@ const main = (mainCallback) => {
   const password = process.env.PASSWORD;
   const getDetailCardCallback = (cardDetail) => {
     const { cardNumber } = cardDetail;
-    console.log(`details ${cardNumber}:`);
-    console.log(JSON.stringify(cardDetail, null, '  '));
+    console.log(`details ${cardNumber}:`); // eslint-disable-line no-console
+    stringifyLog(cardDetail);
     typeof mainCallback == "function" && mainCallback();
   };
   const getCardsCallback = (cookieJar) => (cardList) => {
     const cards = cardList;
-    console.log('cards:');
-    console.log(JSON.stringify(cardList, null, '  '));
+    console.log('cards:'); // eslint-disable-line no-console
+    stringifyLog(cardList);
     const card = cards[0];
     const { cardNumber } = card;
     getDetailCard(cookieJar, cardNumber, getDetailCardCallback);
   };
   const loginCallback = (response) => {
     const { cookieJar, accountInfo } = response;
-    console.log('account info:');
-    console.log(JSON.stringify(accountInfo, null, '  '));
+    console.log('account info:'); // eslint-disable-line no-console
+    stringifyLog(accountInfo);
     const { dni } = accountInfo;
     getCards(cookieJar, dni, getCardsCallback(cookieJar));
   };
   login(email, password, loginCallback);
 };
-/* eslint-enable no-console */
 
 const mainIsModule = (module, main) => main === module;
 mainIsModule(require.main, module) ? main() : null;
