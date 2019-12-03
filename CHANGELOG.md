@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [2019.12.03]
 
  - parametrized tests, refs #1
  - coverage testing, refs #2
