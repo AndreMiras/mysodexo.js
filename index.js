@@ -46,8 +46,7 @@ const sessionPost = (cookieJar, endpoint, jsonData, callback) => {
     json: jsonData,
     jar: cookieJar,
     cert: fs.readFileSync(certFilePath),
-    key: fs.readFileSync(keyFilePath)
-    // passphrase: 'password',
+    key: fs.readFileSync(keyFilePath),
   };
   request.post(options, function (error, response, body) {
     assert(!error, error);
@@ -147,8 +146,7 @@ const main = (mainCallback) => {
 };
 /* eslint-enable no-console */
 
-if (typeof require !== 'undefined' && require.main === module) {
-  main();
-}
+const mainIsModule = (module, main) => main === module;
+mainIsModule(require.main, module) ? main() : null;
 
 module.exports = { sessionPost, login, getCards, getDetailCard, getClearPin, main };

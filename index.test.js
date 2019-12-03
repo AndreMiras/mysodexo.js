@@ -75,7 +75,6 @@ const mockRequest = (post, jar) => {
 
 describe('sessionPost', () => {
   it('base', (done) => {
-    jest.resetModules();
     const endpoint = '/foo/bar';
     const jsonData = {};
     const expected = {};
@@ -152,9 +151,11 @@ const loginResponse = {
 };
 
 describe('login', () => {
-  it('base', (done) => {
+  beforeEach(() => {
     jest.resetModules();
-    jest.unmock('request');
+  });
+
+  it('base', (done) => {
     const email = 'foo@bar.com';
     const password = 'password';
     const expectedCookieJar = {};
@@ -200,9 +201,11 @@ const getCardsResponse = {
 };
 
 describe('getCards', () => {
-  it('base', (done) => {
+  beforeEach(() => {
     jest.resetModules();
-    jest.unmock('request');
+  });
+
+  it('base', (done) => {
     const cookieJar = {};
     const dni = '123456789';
     const post = mockRequestPost(getCardsResponse);
@@ -276,9 +279,11 @@ const getDetailCardResponse = {
 };
 
 describe('getDetailCard', () => {
-  it('base', (done) => {
+  beforeEach(() => {
     jest.resetModules();
-    jest.unmock('request');
+  });
+
+  it('base', (done) => {
     const cookieJar = {};
     const cardNumber = '1234567897901234';
     const post = mockRequestPost(getDetailCardResponse);
@@ -294,9 +299,11 @@ describe('getDetailCard', () => {
 });
 
 describe('getClearPin', () => {
-  it('base', (done) => {
+  beforeEach(() => {
     jest.resetModules();
-    jest.unmock('request');
+  });
+
+  it('base', (done) => {
     const cookieJar = {};
     const cardNumber = '1234567897901234';
     const expectedPin = '1234';
@@ -340,9 +347,11 @@ describe('main', () => {
     rewire('./index.js').__get__('getFullEndpointUrl')(url, 'en')
   );
 
-  it('base', (done) => {
+  beforeEach(() => {
     jest.resetModules();
-    jest.unmock('request');
+  });
+
+  it('base', (done) => {
     // keeps the output clean, by mocking the `console.log()`
     const spyLog = jest.spyOn(console, 'log').mockImplementation();
     const loginUrl = getFullEndpointUrl('v3/connect/login');
