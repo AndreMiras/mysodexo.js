@@ -20,12 +20,20 @@ test: install
 	yarn $(YARN_TEST)
 
 test/debug: install
-	@echo chrome://inspect
 	yarn test:debug
 
+test/inspect: install
+	yarn test:inspect
+
 run: install
-	@echo chrome://inspect
+	yarn run:main
+
+run/debug: install
 	yarn run:debug
+
+run/inspect: install
+	@echo chrome://inspect
+	yarn run:inspect
 
 lint: install
 	yarn lint
