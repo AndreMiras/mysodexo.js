@@ -1,6 +1,6 @@
 {
   "name": "mysodexo",
-  "version": "2019.11.24",
+  "version": "2019.12.03",
   "description": "Client for Mysodexo API",
   "main": "index.js",
   "files": [
