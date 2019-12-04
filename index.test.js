@@ -91,6 +91,9 @@ describe('sessionPost', () => {
     const sessionPost = index.sessionPost;
     const cookieJar = {};
     const callback = (jsonResponse) => {
+      expect(post.mock.calls.length).toBe(1);
+      expect(post.mock.calls[0][0].url.endsWith(endpoint)).toBe(true);
+      expect(post.mock.calls[0][0].json).toBe(jsonData);
       expect(jsonResponse).toEqual(expected);
       done();
     };
@@ -166,6 +169,7 @@ describe('login', () => {
     const login = index.login;
     const callback = (response) => {
       const { cookieJar, accountInfo } = response;
+      expect(post.mock.calls.length).toBe(1);
       expect(cookieJar).toEqual(expectedCookieJar);
       expect(accountInfo).toEqual(loginResponse.response);
       done();
@@ -291,6 +295,7 @@ describe('getDetailCard', () => {
     const index = require('./index.js');
     const getDetailCard = index.getDetailCard;
     const callback = (cardList) => {
+      expect(post.mock.calls.length).toBe(1);
       expect(cardList).toEqual(getDetailCardResponse.response.cardDetail);
       done();
     };
@@ -321,6 +326,7 @@ describe('getClearPin', () => {
     const index = require('./index.js');
     const getClearPin = index.getClearPin;
     const callback = (pin) => {
+      expect(post.mock.calls.length).toBe(1);
       expect(pin).toEqual(expectedPin);
       done();
     };
