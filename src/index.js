@@ -13,7 +13,7 @@ const JSON_RESPONSE_OK_MSG = 'OK';
 const DEFAULT_DEVICE_UID = 'device_uid';
 const DEFAULT_OS = 0;
 
-const CERT_FILENAME = "sodexows.mo2o.com_client-android.crt.pem";
+const CERT_FILENAME = 'sodexows.mo2o.com_client-android.crt.pem';
 const KEY_FILENAME = 'sodexows.mo2o.com_client-android.key.pem';
 const certFilePath = path.resolve(__dirname, CERT_FILENAME);
 const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
@@ -31,7 +31,7 @@ const stringifyLog = (value) => {
   console.log(stringify(value)); // eslint-disable-line no-console
 };
 
-const stripEndpoint = (endpoint) => (endpoint.replace(/^\/+/, ""));
+const stripEndpoint = (endpoint) => (endpoint.replace(/^\/+/, ''));
 
 const getFullEndpointUrl = (endpoint, lang) => (
   `${BASE_URL}/${lang}/${stripEndpoint(endpoint)}`
@@ -75,10 +75,10 @@ const login = (email, password, callback) => {
   const endpoint = LOGIN_ENDPOINT
   const cookieJar = request.jar();
   const jsonData = {
-      "username": email,
-      "pass": password,
-      "deviceUid": DEFAULT_DEVICE_UID,
-      "os": DEFAULT_OS,
+      username: email,
+      pass: password,
+      deviceUid: DEFAULT_DEVICE_UID,
+      os: DEFAULT_OS,
   };
   sessionPost(cookieJar, endpoint, jsonData, (accountInfo) => {
     const data = {
@@ -136,7 +136,7 @@ const main = (mainCallback) => {
     const { cardNumber } = cardDetail;
     console.log(`details ${cardNumber}:`); // eslint-disable-line no-console
     stringifyLog(cardDetail);
-    typeof mainCallback == "function" && mainCallback();
+    typeof mainCallback == 'function' && mainCallback();
   };
   const getCardsCallback = (cookieJar) => (cardList) => {
     const cards = cardList;
