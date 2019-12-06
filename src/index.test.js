@@ -350,7 +350,7 @@ describe('main', () => {
    * Rewires access to `getFullEndpointUrl`
    */
   const getFullEndpointUrl = (url) => (
-    rewire('./index.js').__get__('getFullEndpointUrl')(url, 'en')
+    rewire('./src/index.js').__get__('getFullEndpointUrl')(url, 'en')
   );
 
   beforeEach(() => {
