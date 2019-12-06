@@ -6,13 +6,14 @@ beforeEach(() => {
   jest.resetModules();
 });
 
+const rewireIndex = () => rewire('./src/index.js');
+
 /*
  * Exposes getFullEndpointUrl() for unit tests.
  */
-const getFullEndpointUrl = (endpoint, lang) => {
-  const index = rewire('./src/index.js');
-  return index.__get__('getFullEndpointUrl')(endpoint, lang);
-};
+const getFullEndpointUrl = (endpoint, lang) => (
+  rewireIndex().__get__('getFullEndpointUrl')(endpoint, lang)
+);
 
 describe('getFullEndpointUrl', () => {
 
@@ -37,7 +38,7 @@ describe('getFullEndpointUrl', () => {
 
 describe('handleCodeMsg', () => {
   it('passes silently if no error', () => {
-    const index = rewire('./src/index.js');
+    const index = rewireIndex();
     const handleCodeMsg = index.__get__('handleCodeMsg');
     const jsonResponse = {
       code: 100,
@@ -54,7 +55,7 @@ describe('handleCodeMsg', () => {
     [100, 'Error'],
     [null, null]
   ])('raises on unmatching code (%s) or msg (%s)', (code, msg) => {
-    const index = rewire('./src/index.js');
+    const index = rewireIndex();
     const handleCodeMsg = index.__get__('handleCodeMsg');
     const jsonResponse = { code, msg };
     const expected = assert.AssertionError;
