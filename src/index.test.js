@@ -2,10 +2,21 @@ const assert = require('assert');
 const rewire = require('rewire');
 
 
+beforeEach(() => {
+  jest.resetModules();
+});
+
+/*
+ * Exposes getFullEndpointUrl() for unit tests.
+ */
+const getFullEndpointUrl = (endpoint, lang) => {
+  const index = rewire('./src/index.js');
+  return index.__get__('getFullEndpointUrl')(endpoint, lang);
+};
+
 describe('getFullEndpointUrl', () => {
+
   const testHelper = (endpoint, lang, expected) => {
-    const index = rewire('./index.js');
-    const getFullEndpointUrl = index.__get__('getFullEndpointUrl');
     expect(getFullEndpointUrl(endpoint, lang)).toBe(expected);
   };
 
@@ -26,7 +37,7 @@ describe('getFullEndpointUrl', () => {
 
 describe('handleCodeMsg', () => {
   it('passes silently if no error', () => {
-    const index = rewire('./index.js');
+    const index = rewire('./src/index.js');
     const handleCodeMsg = index.__get__('handleCodeMsg');
     const jsonResponse = {
       code: 100,
@@ -43,7 +54,7 @@ describe('handleCodeMsg', () => {
     [100, 'Error'],
     [null, null]
   ])('raises on unmatching code (%s) or msg (%s)', (code, msg) => {
-    const index = rewire('./index.js');
+    const index = rewire('./src/index.js');
     const handleCodeMsg = index.__get__('handleCodeMsg');
     const jsonResponse = { code, msg };
     const expected = assert.AssertionError;
@@ -74,6 +85,7 @@ const mockRequest = (post, jar) => {
 };
 
 describe('sessionPost', () => {
+
   it('base', (done) => {
     const endpoint = '/foo/bar';
     const jsonData = {};
@@ -154,10 +166,6 @@ const loginResponse = {
 };
 
 describe('login', () => {
-  beforeEach(() => {
-    jest.resetModules();
-  });
-
   it('base', (done) => {
     const email = 'foo@bar.com';
     const password = 'password';
@@ -205,10 +213,6 @@ const getCardsResponse = {
 };
 
 describe('getCards', () => {
-  beforeEach(() => {
-    jest.resetModules();
-  });
-
   it('base', (done) => {
     const cookieJar = {};
     const dni = '123456789';
@@ -283,10 +287,6 @@ const getDetailCardResponse = {
 };
 
 describe('getDetailCard', () => {
-  beforeEach(() => {
-    jest.resetModules();
-  });
-
   it('base', (done) => {
     const cookieJar = {};
     const cardNumber = '1234567897901234';
@@ -304,10 +304,6 @@ describe('getDetailCard', () => {
 });
 
 describe('getClearPin', () => {
-  beforeEach(() => {
-    jest.resetModules();
-  });
-
   it('base', (done) => {
     const cookieJar = {};
     const cardNumber = '1234567897901234';
@@ -346,23 +342,12 @@ const mockRequestPostPerUrl = (perUrlResponseBody) => jest.fn(
 );
 
 describe('main', () => {
-  /*
-   * Rewires access to `getFullEndpointUrl`
-   */
-  const getFullEndpointUrl = (url) => (
-    rewire('./src/index.js').__get__('getFullEndpointUrl')(url, 'en')
-  );
-
-  beforeEach(() => {
-    jest.resetModules();
-  });
-
   it('base', (done) => {
     // keeps the output clean, by mocking the `console.log()`
     const spyLog = jest.spyOn(console, 'log').mockImplementation();
-    const loginUrl = getFullEndpointUrl('v3/connect/login');
-    const getCardsUrl = getFullEndpointUrl('v3/card/getCards');
-    const getDetailCardUrl = getFullEndpointUrl('v2/card/getDetailCard');
+    const loginUrl = getFullEndpointUrl('v3/connect/login', 'en');
+    const getCardsUrl = getFullEndpointUrl('v3/card/getCards', 'en');
+    const getDetailCardUrl = getFullEndpointUrl('v2/card/getDetailCard', 'en');
     const perUrlResponseBody = {
       [loginUrl]: loginResponse,
       [getCardsUrl]: getCardsResponse,
