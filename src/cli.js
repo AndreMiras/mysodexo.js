@@ -1,12 +1,19 @@
 #!/usr/bin/env node
-const read = require('read');
 const api = require('./index.js');
+const { BASE_URL } = require('./constants.js');
+const request = require('request');
+const read = require('read');
+const path = require('path');
+const fs = require('fs');
 
 
-const help = () => {
-  console.log('help'); // eslint-disable-line no-console
-};
 
+const APPLICATION_NAME = 'mysodexo';
+const SESSION_CACHE_FILENAME = 'session.cache';
+
+/*
+ * Prompts user for credentials and the returns them through the callback.
+ */
 const promptLogin = (callback) => {
   read({ prompt: 'email: ' }, (error, email) => {
     read({ prompt: 'password: ', silent: true }, (error, password) => {
@@ -15,20 +22,50 @@ const promptLogin = (callback) => {
   });
 };
 
+/*
+ * Returns OS dependent base data directory.
+ */
+const baseDataDir = () => (
+  process.env.APPDATA || (
+    process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
+);
+
+/*
+ * Returns file path used to store the session cookie.
+ */
+const getSessionCachePath = () => path.join(baseDataDir(), APPLICATION_NAME, SESSION_CACHE_FILENAME);
+
+/*
+ * Returns session and DNI from cache.
+ */
+const getCachedSessionInfo = () => (
+  JSON.parse(fs.readFileSync(getSessionCachePath()))
+);
+
+/*
+ * Stores session info to cache.
+ */
 const cacheSessionInfo = (cookieJar, dni) => {
-  void(dni); // pleases the linter for now until we do something
+  const sessionCachePath = getSessionCachePath();
+  const cookies = cookieJar.getCookieString(BASE_URL);
+  const cachedSessionInfo = {
+    cookies,
+    dni,
+  };
+  fs.mkdirSync(path.dirname(sessionCachePath), { recursive: true });
+  fs.writeFileSync(sessionCachePath, JSON.stringify(cachedSessionInfo));
 };
 
 /*
- * Logins and stores session info to cache.
+ * Logins and returns session info.
  */
-const login = () => {
+const login = (callback) => {
   const loginCallback = (response) => {
     const { cookieJar, accountInfo } = response;
     console.log('account info:'); // eslint-disable-line no-console
     api.stringifyLog(accountInfo);
     const { dni } = accountInfo;
-    cacheSessionInfo(cookieJar, dni);
+    callback(cookieJar, dni);
   };
   const promptLoginCallback = (email, password) => {
     api.login(email, password, loginCallback);
@@ -36,14 +73,65 @@ const login = () => {
   promptLogin(promptLoginCallback);
 };
 
-const balance = () => {
-  console.log('balance'); // eslint-disable-line no-console
+/*
+ * Logins and stores session info to cache.
+ * Callback is optional.
+ */
+const processLogin = (callback) => {
+  const loginCallback = (cookieJar, dni) => {
+    cacheSessionInfo(cookieJar, dni);
+    typeof callback == 'function' && callback(cookieJar, dni);
+  };
+  login(loginCallback);
+};
+
+/*
+ * Retrieves session from cache or prompts login then stores session.
+ */
+const getSessionOrLogin = (callback) => {
+  try {
+    const { cookies, dni } = getCachedSessionInfo();
+    const cookieJar = request.jar();
+    const cookie = request.cookie(cookies);
+    cookieJar.setCookie(cookie, BASE_URL);
+    callback(cookieJar, dni);
+  } catch (exception) {
+    exception.code === 'ENOENT' ? processLogin(callback) : (() => {throw exception})();
+  }
+};
+
+/*
+ * Retrieves and prints balance per card.
+ */
+const processBalance = () => {
+  const getDetailCardCallback = (card) => (cardDetail) => {
+    console.log(`${card.pan}: ${cardDetail.cardBalance}`); // eslint-disable-line no-console
+  };
+  const getCardsCallback = (cookieJar) => (cardList) => {
+    const cards = cardList;
+    cards.forEach((card) => {
+      api.getDetailCard(cookieJar, card.cardNumber, getDetailCardCallback(card));
+    });
+  };
+  const getSessionOrLoginCallback = (cookieJar, dni) => {
+    api.getCards(cookieJar, dni, getCardsCallback(cookieJar));
+  };
+  getSessionOrLogin(getSessionOrLoginCallback);
+};
+
+const help = () => {
+  console.log( // eslint-disable-line no-console
+    'Usage:\n' +
+    'mysodexo --help\t\tthis message\n' +
+    'mysodexo --login\tlogins and caches the session\n' +
+    'mysodexo --balance\tprints the balance'
+  );
 };
 
 const main = () => {
   const args = process.argv.slice(2);
-  const arg2Function = arg => ({ login: login, balance: balance }[arg] || help);
-  const arg = args[0].replace(/^--/, '');
+  const arg2Function = arg => ({ login: processLogin, balance: processBalance }[arg] || help);
+  const arg = args[0] ? args[0].replace(/^--/, '') : 'help';
   const fun = arg2Function(arg);
   fun();
 };

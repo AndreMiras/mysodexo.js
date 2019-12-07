@@ -12,7 +12,7 @@
   "scripts": {
     "test": "jest --coverage",
     "test:coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "lint": "eslint *.js",
+    "lint": "eslint src/*.js",
     "test:inspect": "node --inspect node_modules/.bin/jest --runInBand src/index.test.js",
     "test:debug": "node debug node_modules/.bin/jest --runInBand src/index.test.js",
     "run:api": "node src/index.js",

@@ -2,8 +2,8 @@ const assert = require('assert');
 const request = require('request');
 const fs = require('fs');
 const path = require('path');
+const { BASE_URL } = require('./constants.js');
 
-const BASE_URL = 'https://sodexows.mo2o.com';
 const LOGIN_ENDPOINT = 'v3/connect/login';
 const GET_CARDS_ENDPOINT = 'v3/card/getCards';
 const GET_DETAIL_CARD_ENDPOINT = 'v2/card/getDetailCard';

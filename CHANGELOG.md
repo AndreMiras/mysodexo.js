@@ -1,5 +1,9 @@
 # Change Log
 
+## [Unreleased]
+
+ - add command line interface, refs #6
+
 ## [2019.12.03]
 
  - parametrized tests, refs #1
