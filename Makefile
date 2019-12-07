@@ -26,14 +26,19 @@ test/inspect: install
 	yarn test:inspect
 
 run: install
-	yarn run:main
+	yarn run:api
 
-run/debug: install
-	yarn run:debug
+run/api: run
 
-run/inspect: install
+run/api/debug: install
+	yarn run:api:debug
+
+run/api/inspect: install
 	@echo chrome://inspect
-	yarn run:inspect
+	yarn run:api:inspect
+
+run/cli: install
+	yarn run:cli
 
 lint: install
 	yarn lint

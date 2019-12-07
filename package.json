@@ -1,20 +1,24 @@
 {
   "name": "mysodexo",
-  "version": "2019.12.03",
+  "version": "2019.12.07",
   "description": "Client for Mysodexo API",
-  "main": "index.js",
+  "main": "src/index.js",
+  "bin": {
+    "mysodexo": "src/cli.js"
+  },
   "files": [
     "sodexows.mo2o.com_client-android.*.pem"
   ],
   "scripts": {
     "test": "jest --coverage",
-    "test:coveralls": "jest --coverage --coverageReporters=text-lcov | coveralls",
-    "test:inspect": "node --inspect node_modules/.bin/jest --runInBand index.test.js",
-    "test:debug": "node debug node_modules/.bin/jest --runInBand index.test.js",
-    "run:main": "node index.js",
-    "run:inspect": "node --inspect index.js",
-    "run:debug": "node debug index.js",
-    "lint": "eslint *.js"
+    "test:coveralls": "jest --coverage && coveralls < coverage/lcov.info",
+    "lint": "eslint src/*.js",
+    "test:inspect": "node --inspect node_modules/.bin/jest --runInBand src/index.test.js",
+    "test:debug": "node debug node_modules/.bin/jest --runInBand src/index.test.js",
+    "run:api": "node src/index.js",
+    "run:api:inspect": "node --inspect src/index.js",
+    "run:api:debug": "node debug src/index.js",
+    "run:cli": "node cli.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +40,7 @@
   },
   "dependencies": {
     "coveralls": "^3.0.8",
+    "read": "^1.0.7",
     "request": "^2.88.0"
   }
 }
