@@ -1,5 +1,9 @@
 # Change Log
 
+## [Unreleased]
+
+ - fix missing files from tarball archive
+
 ## [2019.12.07]
 
  - add command line interface, refs #6

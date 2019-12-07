@@ -7,7 +7,8 @@
     "mysodexo": "src/cli.js"
   },
   "files": [
-    "sodexows.mo2o.com_client-android.*.pem"
+    "src/sodexows.mo2o.com_client-android.*.pem",
+    "src/*.js"
   ],
   "scripts": {
     "test": "jest --coverage",
