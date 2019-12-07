@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased]
+## [2019.12.07]
 
  - add command line interface, refs #6
 
