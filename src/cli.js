@@ -62,8 +62,6 @@ const cacheSessionInfo = (cookieJar, dni) => {
 const login = (callback) => {
   const loginCallback = (response) => {
     const { cookieJar, accountInfo } = response;
-    console.log('account info:'); // eslint-disable-line no-console
-    api.stringifyLog(accountInfo);
     const { dni } = accountInfo;
     callback(cookieJar, dni);
   };
@@ -139,4 +137,11 @@ const main = () => {
 const mainIsModule = (module, main) => main === module;
 mainIsModule(require.main, module) ? main() : null;
 
-module.exports = { promptLogin, baseDataDir, getSessionCachePath, getCachedSessionInfo, cacheSessionInfo };
+module.exports = {
+  promptLogin,
+  baseDataDir,
+  getSessionCachePath,
+  getCachedSessionInfo,
+  cacheSessionInfo,
+  login,
+};
