@@ -143,3 +143,40 @@ describe('login', () => {
     expect(login(callback)).toEqual(expected);
   });
 });
+
+describe('processLogin', () => {
+  it('base', (done) => {
+    const expected = undefined;
+    const expectedEmail = 'foo@bar.com';
+    const expectedPassword = 'password';
+    mockReadCredentials(expectedEmail, expectedPassword);
+    const getCookieString = jest.fn();
+    const expectedCookieJar = {
+      getCookieString,
+    };
+    const expectedDni = '123456789';
+    const accountInfo = { dni: expectedDni };
+    const apiLoginResponse = {
+      cookieJar: expectedCookieJar,
+      accountInfo,
+    };
+    const apiLogin = mockApiLogin(apiLoginResponse);
+    doMockApiLogin(apiLogin);
+    const mkdirSync = jest.fn();
+    const writeFileSync = jest.fn();
+    jest.doMock('fs', () => ({
+      mkdirSync,
+      writeFileSync,
+    }));
+    const { processLogin } = require('./cli.js');
+    const callback = (cookieJar, dni) => {
+      expect(apiLogin.mock.calls.length).toBe(1);
+      expect(apiLogin.mock.calls[0][0]).toEqual(expectedEmail);
+      expect(apiLogin.mock.calls[0][1]).toEqual(expectedPassword);
+      expect(cookieJar).toEqual(expectedCookieJar);
+      expect(dni).toEqual(expectedDni);
+      done();
+    };
+    expect(processLogin(callback)).toEqual(expected);
+  });
+});

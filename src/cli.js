@@ -144,4 +144,5 @@ module.exports = {
   getCachedSessionInfo,
   cacheSessionInfo,
   login,
+  processLogin,
 };
