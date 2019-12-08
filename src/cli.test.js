@@ -34,7 +34,6 @@ describe('promptLogin', () => {
   });
 });
 
-
 describe('baseDataDir', () => {
   const originalPlatform = process.platform;
 
@@ -58,5 +57,14 @@ describe('baseDataDir', () => {
     const { baseDataDir } = cli;
     setPlatformHelper(platform);
     expect(baseDataDir().endsWith(expected)).toBe(true);
+  });
+});
+
+describe('getSessionCachePath', () => {
+  it('base', () => {
+    const { getSessionCachePath } = cli;
+    const expected = '/mysodexo/session.cache';
+    console.log(getSessionCachePath());
+    expect(getSessionCachePath().endsWith(expected)).toBe(true);
   });
 });
