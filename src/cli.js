@@ -145,4 +145,5 @@ module.exports = {
   cacheSessionInfo,
   login,
   processLogin,
+  getSessionOrLogin,
 };

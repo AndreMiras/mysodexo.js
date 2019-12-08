@@ -180,3 +180,24 @@ describe('processLogin', () => {
     expect(processLogin(callback)).toEqual(expected);
   });
 });
+
+describe('getSessionOrLogin', () => {
+  it('session file exists', (done) => {
+    const expected = undefined;
+    const cookies = 'cookieKey=cookieValue';
+    const expectedDni = '123456789';
+    const sessionInfo = { cookies, dni: expectedDni };
+    const readFileSync = () => (JSON.stringify(sessionInfo));
+    jest.doMock('fs', () => ({
+      readFileSync
+    }));
+    const { getSessionOrLogin } = require('./cli.js');
+    const callback = (cookieJar, dni) => {
+      const { BASE_URL } = require('./constants.js');
+      expect(cookieJar.getCookieString(BASE_URL)).toEqual(cookies);
+      expect(dni).toEqual(expectedDni);
+      done();
+    };
+    expect(getSessionOrLogin(callback)).toEqual(expected);
+  });
+});
