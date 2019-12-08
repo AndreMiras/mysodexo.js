@@ -138,3 +138,5 @@ const main = () => {
 
 const mainIsModule = (module, main) => main === module;
 mainIsModule(require.main, module) ? main() : null;
+
+module.exports = { promptLogin, baseDataDir };
