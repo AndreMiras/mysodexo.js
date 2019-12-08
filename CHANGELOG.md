@@ -1,5 +1,9 @@
 # Change Log
 
+## [Unreleased]
+
+ - unit test CLI, refs #8
+
 ## [2019.12.08]
 
  - fix missing files from tarball archive

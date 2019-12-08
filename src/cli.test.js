@@ -16,14 +16,26 @@ const promptLogin = (callback) => (
   require('./cli.js').promptLogin(callback)
 );
 
+const mockReadCredentials = (email, password) => {
+  const read = require('read');
+  read.mockImplementationOnce((options, callback) => callback({}, email));
+  read.mockImplementationOnce((options, callback) => callback({}, password));
+};
+
+const mockApiLogin = (apiLoginResponse) => (
+  jest.fn((email, password, loginCallback) => (
+    loginCallback(apiLoginResponse))
+  )
+);
+
+const doMockApiLogin = (login) => jest.doMock('./index.js', () => ({ login }));
+
 describe('promptLogin', () => {
   it('base', (done) => {
     jest.mock('read');
-    const read = require('read');
     const expectedEmail = 'foo@bar.com';
     const expectedPassword = 'password';
-    read.mockImplementationOnce((options, callback) => callback({}, expectedEmail));
-    read.mockImplementationOnce((options, callback) => callback({}, expectedPassword));
+    mockReadCredentials(expectedEmail, expectedPassword);
     const callback = (email, password) => {
       expect(email).toEqual(expectedEmail);
       expect(password).toEqual(expectedPassword);
@@ -109,10 +121,7 @@ describe('login', () => {
     const expected = undefined;
     const expectedEmail = 'foo@bar.com';
     const expectedPassword = 'password';
-    jest.mock('read');
-    const read = require('read');
-    read.mockImplementationOnce((options, callback) => callback({}, expectedEmail));
-    read.mockImplementationOnce((options, callback) => callback({}, expectedPassword));
+    mockReadCredentials(expectedEmail, expectedPassword);
     const expectedCookieJar = {};
     const expectedDni = '123456789';
     const accountInfo = { dni: expectedDni };
@@ -120,10 +129,8 @@ describe('login', () => {
       cookieJar: expectedCookieJar,
       accountInfo,
     };
-    const apiLogin = jest.fn((email, password, loginCallback) => (loginCallback(apiLoginResponse)));
-    jest.doMock('./index.js', () => ({
-      login: apiLogin,
-    }));
+    const apiLogin = mockApiLogin(apiLoginResponse);
+    doMockApiLogin(apiLogin);
     const { login } = require('./cli.js');
     const callback = (cookieJar, dni) => {
       expect(apiLogin.mock.calls.length).toBe(1);
