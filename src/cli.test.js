@@ -70,11 +70,36 @@ describe('getSessionCachePath', () => {
 describe('getCachedSessionInfo', () => {
   it('base', () => {
     const expected = { foo: 'bar' };
-    const readFileSync = (path) => (JSON.stringify(expected));
+    const readFileSync = () => (JSON.stringify(expected));
     jest.doMock('fs', () => ({
       readFileSync
     }));
     const { getCachedSessionInfo } = require('./cli.js');
     expect(getCachedSessionInfo()).toEqual(expected);
+  });
+});
+
+describe('cacheSessionInfo', () => {
+  it('base', () => {
+    const expected = undefined;
+    const mkdirSync = jest.fn();
+    const writeFileSync = jest.fn();
+    jest.doMock('fs', () => ({
+      mkdirSync,
+      writeFileSync,
+    }));
+    const { cacheSessionInfo } = require('./cli.js');
+    const getCookieString = jest.fn();
+    const cookieJar = {
+      getCookieString,
+    };
+    const dni = '123456789';
+    expect(cacheSessionInfo(cookieJar, dni)).toEqual(expected);
+    expect(mkdirSync.mock.calls.length).toBe(1);
+    expect(mkdirSync.mock.calls[0][0].endsWith('/mysodexo')).toBe(true);
+    expect(mkdirSync.mock.calls[0][1]).toEqual({ recursive: true });
+    expect(writeFileSync.mock.calls.length).toBe(1);
+    expect(writeFileSync.mock.calls[0][0].endsWith('/mysodexo/session.cache')).toBe(true);
+    expect(writeFileSync.mock.calls[0][1]).toEqual(JSON.stringify({ dni }));
   });
 });

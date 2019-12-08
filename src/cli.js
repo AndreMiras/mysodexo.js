@@ -139,4 +139,4 @@ const main = () => {
 const mainIsModule = (module, main) => main === module;
 mainIsModule(require.main, module) ? main() : null;
 
-module.exports = { promptLogin, baseDataDir, getSessionCachePath, getCachedSessionInfo };
+module.exports = { promptLogin, baseDataDir, getSessionCachePath, getCachedSessionInfo, cacheSessionInfo };
