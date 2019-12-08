@@ -1,4 +1,3 @@
-const cli = require('./cli.js')
 // const rewire = require('rewire');
 
 
@@ -54,7 +53,7 @@ describe('baseDataDir', () => {
     ['linux', '/.local/share'],
     ['darwin', '/Library/Preferences'],
   ])('platform (%s) expected (%s)', (platform, expected) => {
-    const { baseDataDir } = cli;
+    const { baseDataDir } = require('./cli.js');
     setPlatformHelper(platform);
     expect(baseDataDir().endsWith(expected)).toBe(true);
   });
@@ -62,9 +61,20 @@ describe('baseDataDir', () => {
 
 describe('getSessionCachePath', () => {
   it('base', () => {
-    const { getSessionCachePath } = cli;
+    const { getSessionCachePath } = require('./cli.js');
     const expected = '/mysodexo/session.cache';
-    console.log(getSessionCachePath());
     expect(getSessionCachePath().endsWith(expected)).toBe(true);
+  });
+});
+
+describe('getCachedSessionInfo', () => {
+  it('base', () => {
+    const expected = { foo: 'bar' };
+    const readFileSync = (path) => (JSON.stringify(expected));
+    jest.doMock('fs', () => ({
+      readFileSync
+    }));
+    const { getCachedSessionInfo } = require('./cli.js');
+    expect(getCachedSessionInfo()).toEqual(expected);
   });
 });
