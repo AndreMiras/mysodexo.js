@@ -201,6 +201,10 @@ describe('getSessionOrLogin', () => {
     expect(getSessionOrLogin(callback)).toEqual(expected);
   });
 
+  /*
+   * The `getSessionOrLogin()` function should fallback to login
+   * if session cache file isn't available.
+   */
   it('session file does not exists', (done) => {
     const expected = undefined;
     const error = new Error();
@@ -236,5 +240,50 @@ describe('getSessionOrLogin', () => {
       done();
     };
     expect(getSessionOrLogin(callback)).toEqual(expected);
+  });
+
+  /*
+   * The `getSessionOrLogin()` function should throw if an error != ENOENT is raised.
+   */
+  it('session file throw != ENOENT', (done) => {
+    const error = new Error();
+    error.code = 'NOT ENOENT';
+    const readFileSync = () => { throw error };
+    // since the file doesn't exist it should go through login again
+    const expectedEmail = 'foo@bar.com';
+    const expectedPassword = 'password';
+    mockReadCredentials(expectedEmail, expectedPassword);
+    const getCookieString = jest.fn();
+    const expectedCookieJar = {
+      getCookieString,
+    };
+    const expectedDni = '123456789';
+    const accountInfo = { dni: expectedDni };
+    const apiLoginResponse = {
+      cookieJar: expectedCookieJar,
+      accountInfo,
+    };
+    const apiLogin = mockApiLogin(apiLoginResponse);
+    doMockApiLogin(apiLogin);
+    const mkdirSync = jest.fn();
+    const writeFileSync = jest.fn();
+    jest.doMock('fs', () => ({
+      readFileSync,
+      mkdirSync,
+      writeFileSync,
+    }));
+    const { getSessionOrLogin } = require('./cli.js');
+    const callback = (cookieJar, dni) => {
+      expect(cookieJar).toEqual(expectedCookieJar);
+      expect(dni).toEqual(expectedDni);
+    };
+    try {
+      getSessionOrLogin(callback);
+      done.fail(new Error('Did not throw'));
+    } catch (exception) {
+      expect(exception).toEqual(error);
+    }
+    done();
+
   });
 });
