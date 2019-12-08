@@ -200,4 +200,41 @@ describe('getSessionOrLogin', () => {
     };
     expect(getSessionOrLogin(callback)).toEqual(expected);
   });
+
+  it('session file does not exists', (done) => {
+    const expected = undefined;
+    const error = new Error();
+    error.code = 'ENOENT';
+    const readFileSync = () => { throw error };
+    // since the file doesn't exist it should go through login again
+    const expectedEmail = 'foo@bar.com';
+    const expectedPassword = 'password';
+    mockReadCredentials(expectedEmail, expectedPassword);
+    const getCookieString = jest.fn();
+    const expectedCookieJar = {
+      getCookieString,
+    };
+    const expectedDni = '123456789';
+    const accountInfo = { dni: expectedDni };
+    const apiLoginResponse = {
+      cookieJar: expectedCookieJar,
+      accountInfo,
+    };
+    const apiLogin = mockApiLogin(apiLoginResponse);
+    doMockApiLogin(apiLogin);
+    const mkdirSync = jest.fn();
+    const writeFileSync = jest.fn();
+    jest.doMock('fs', () => ({
+      readFileSync,
+      mkdirSync,
+      writeFileSync,
+    }));
+    const { getSessionOrLogin } = require('./cli.js');
+    const callback = (cookieJar, dni) => {
+      expect(cookieJar).toEqual(expectedCookieJar);
+      expect(dni).toEqual(expectedDni);
+      done();
+    };
+    expect(getSessionOrLogin(callback)).toEqual(expected);
+  });
 });
