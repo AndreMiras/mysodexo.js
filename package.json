@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/AndreMiras/mysodexojs.git"
+    "url": "git+ssh://git@github.com/AndreMiras/mysodexo.js.git"
   },
   "keywords": [
     "mysodexo"
@@ -31,9 +31,9 @@
   "author": "Andre Miras",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/AndreMiras/mysodexojs/issues"
+    "url": "https://github.com/AndreMiras/mysodexo.js/issues"
   },
-  "homepage": "https://github.com/AndreMiras/mysodexojs",
+  "homepage": "https://github.com/AndreMiras/mysodexo.js",
   "devDependencies": {
     "eslint-plugin-jest": "^23.0.4",
     "jest": "^24.9.0",
