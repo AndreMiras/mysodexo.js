@@ -306,3 +306,33 @@ describe('help', () => {
     spyLog.mockRestore();
   });
 });
+
+describe('main', () => {
+  it.each([
+    [[]],
+    [['--help']],
+    [['--unknown']],
+    [['--help', '--login']],
+  ])('help is called when argv is %s', (argv) => {
+    const help = jest.fn(() => {});
+    const cli = requireCli();
+    cli.help = help;
+    cli.main(['node', 'cli.js'].concat(argv));
+    expect(help.mock.calls.length).toBe(1);
+  });
+
+  it.each([
+    [['--login']],
+    [['--login', '--unknown']],
+    [['--login', '--help']],
+  ])('processLogin is called when argv is %s', (argv) => {
+    const processLogin = jest.fn(() => {});
+    const help = jest.fn(() => {});
+    const cli = requireCli();
+    cli.processLogin = processLogin;
+    cli.help = help;
+    cli.main(['node', 'cli.js'].concat(argv));
+    expect(processLogin.mock.calls.length).toBe(1);
+    expect(help.mock.calls.length).toBe(0);
+  });
+});

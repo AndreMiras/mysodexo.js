@@ -140,9 +140,16 @@ const help = () => {
   );
 };
 
-const main = () => {
-  const args = process.argv.slice(2);
-  const arg2Function = arg => ({ login: exports.processLogin, balance: exports.processBalance }[arg] || help);
+const main = (argv) => {
+  const args = argv.slice(2);
+  const arg2FunctionMap = {
+    login: exports.processLogin,
+    balance: exports.processBalance,
+    help: exports.help,
+  };
+  // defaults to help if unknown
+  const arg2Function = arg => (arg2FunctionMap[arg] || exports.help);
+  // defaults to help if no args provided
   const arg = args[0] ? args[0].replace(/^--/, '') : 'help';
   const fun = arg2Function(arg);
   fun();
@@ -164,4 +171,4 @@ module.exports = {
   main,
 };
 exports = module.exports;
-mainIsModule(require.main, module) ? main() : null;
+mainIsModule(require.main, module) ? main(process.argv) : null;

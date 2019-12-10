@@ -11,7 +11,7 @@
     "src/*.js"
   ],
   "scripts": {
-    "test": "jest --coverage src/*test.js",
+    "test": "jest --verbose --coverage src/*test.js",
     "test:coveralls": "jest --coverage && coveralls < coverage/lcov.info",
     "lint": "eslint src/*.js",
     "test:inspect": "node --inspect node_modules/.bin/jest --runInBand src/*.test.js",
