@@ -296,3 +296,13 @@ describe('processBalance', () => {
     expect(cli.processBalance(callback)).toEqual(expected);
   });
 });
+
+describe('help', () => {
+  it('base', () => {
+    const spyLog = jest.spyOn(console, 'log').mockImplementation();
+    const { help } = requireCli();
+    help();
+    expect(spyLog.mock.calls.length).toBe(1);
+    spyLog.mockRestore();
+  });
+});

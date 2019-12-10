@@ -160,6 +160,8 @@ module.exports = {
   processLogin,
   getSessionOrLogin,
   processBalance,
+  help,
+  main,
 };
 exports = module.exports;
 mainIsModule(require.main, module) ? main() : null;
