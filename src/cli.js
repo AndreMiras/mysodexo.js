@@ -99,16 +99,30 @@ const getSessionOrLogin = (callback) => {
 };
 
 /*
+ * Prints per card balance.
+ */
+const printBalance = (cardsDetails) => {
+  cardsDetails.forEach((cardDetail) => {
+    console.log(`${cardDetail.pan}: ${cardDetail.cardBalance}`); // eslint-disable-line no-console
+  });
+};
+
+/*
  * Retrieves and prints balance per card.
  */
-const processBalance = () => {
-  const getDetailCardCallback = (card) => (cardDetail) => {
-    console.log(`${card.pan}: ${cardDetail.cardBalance}`); // eslint-disable-line no-console
+const processBalance = (callback) => {
+  let cardsDetails = [];
+  const processBalanceCallback = (cardsDetails) => {
+    printBalance(cardsDetails);
+    typeof callback == 'function' && callback(cardsDetails);
+  };
+  const getDetailCardCallback = (total) => (cardDetail) => {
+    cardsDetails = cardsDetails.concat([cardDetail]);
+    cardsDetails.length === total && processBalanceCallback(cardsDetails);
   };
   const getCardsCallback = (cookieJar) => (cardList) => {
-    const cards = cardList;
-    cards.forEach((card) => {
-      api.getDetailCard(cookieJar, card.cardNumber, getDetailCardCallback(card));
+    cardList.forEach((card) => {
+      api.getDetailCard(cookieJar, card.cardNumber, getDetailCardCallback(cardList.length));
     });
   };
   const getSessionOrLoginCallback = (cookieJar, dni) => {
@@ -135,7 +149,6 @@ const main = () => {
 };
 
 const mainIsModule = (module, main) => main === module;
-mainIsModule(require.main, module) ? main() : null;
 
 module.exports = {
   promptLogin,
@@ -149,3 +162,4 @@ module.exports = {
   processBalance,
 };
 exports = module.exports;
+mainIsModule(require.main, module) ? main() : null;

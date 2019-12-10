@@ -118,6 +118,10 @@ describe('cacheSessionInfo', () => {
 });
 
 describe('login', () => {
+  afterEach(() => {
+    jest.unmock('./index.js');
+  });
+
   it('base', (done) => {
     const expected = undefined;
     const expectedEmail = 'foo@bar.com';
@@ -240,5 +244,55 @@ describe('getSessionOrLogin', () => {
       expect(exception).toEqual(error);
     }
     done();
+  });
+});
+
+describe('processBalance', () => {
+  afterEach(() => {
+    jest.unmock('./index.js');
+  });
+
+  it('base', (done) => {
+    const expected = undefined;
+    const expectedCookieJar = {};
+    const expectedDni = '123456789';
+    const getSessionOrLogin = jest.fn((callback) => callback(expectedCookieJar, expectedDni));
+    const expectedCardNumber = '1234567897901234';
+    const expectedCard = {
+      cardNumber: expectedCardNumber,
+    };
+    const expectedCardList = [
+      expectedCard,
+    ];
+    const getCards = jest.fn((cookieJar, dni, getCardsCallback) => (
+      getCardsCallback(expectedCardList))
+    );
+    const expectedCardDetail = {
+      cardBalance: 13.37,
+      pan: '123456******1234',
+    };
+    const expectedCardsDetails = [expectedCardDetail];
+    const getDetailCard = jest.fn((cookieJar, cardNumber, getDetailCardCallback) => (
+      getDetailCardCallback(expectedCardDetail))
+    );
+    const spyLog = jest.spyOn(console, 'log').mockImplementation();
+    jest.doMock('./index.js', () => ({
+      getCards,
+      getDetailCard,
+    }));
+    const cli = requireCli();
+    cli.getSessionOrLogin = getSessionOrLogin;
+    const callback = (cardsDetails) => {
+      expect(spyLog.mock.calls.length).toBe(1);
+      expect(spyLog.mock.calls[0]).toEqual([
+        '123456******1234: 13.37',
+      ]);
+      spyLog.mockRestore();
+      expect(getSessionOrLogin.mock.calls.length).toBe(1);
+      expect(getSessionOrLogin.mock.calls[0][0]).toBeInstanceOf(Function)
+      expect(cardsDetails).toEqual(expectedCardsDetails);
+      done();
+    };
+    expect(cli.processBalance(callback)).toEqual(expected);
   });
 });
