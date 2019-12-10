@@ -1,7 +1,7 @@
 # Mysodexo JavaScript client
 
 [![Build Status](https://travis-ci.com/AndreMiras/mysodexojs.svg?branch=develop)](https://travis-ci.com/AndreMiras/mysodexojs)
-[![Coverage Status](https://coveralls.io/repos/github/AndreMiras/mysodexojs/badge.svg?branch=develop)](https://coveralls.io/github/AndreMiras/mysodexojs?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/AndreMiras/mysodexo.js/badge.svg?branch=develop)](https://coveralls.io/github/AndreMiras/mysodexo.js?branch=develop)
 [![npm version](https://badge.fury.io/js/mysodexo.svg)](https://badge.fury.io/js/mysodexo)
 
 A Javascript client for the Mysodexo [reverse engineered API](https://medium.com/@andre.miras/reverse-engineering-sodexos-api-d13710b7bf0d).
