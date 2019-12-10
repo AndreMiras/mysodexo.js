@@ -171,4 +171,4 @@ module.exports = {
   main,
 };
 exports = module.exports;
-mainIsModule(require.main, module) ? main(process.argv) : null;
+mainIsModule(require.main, module) && main(process.argv);

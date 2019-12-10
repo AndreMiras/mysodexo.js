@@ -157,6 +157,6 @@ const main = (mainCallback) => {
 };
 
 const mainIsModule = (module, main) => main === module;
-mainIsModule(require.main, module) ? main() : null;
+mainIsModule(require.main, module) && main();
 
 module.exports = { stringifyLog, sessionPost, login, getCards, getDetailCard, getClearPin, main };
