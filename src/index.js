@@ -22,7 +22,7 @@ const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
 /*
  * Indented JSON.stringify() alias.
  */
-const stringify = value => JSON.stringify(value, null, ' ');
+const stringify = value => JSON.stringify(value, null, '  ');
 
 /*
  * Logs value to console as a JSON string.
