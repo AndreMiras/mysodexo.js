@@ -1,6 +1,6 @@
 {
   "name": "mysodexo",
-  "version": "2019.12.08",
+  "version": "2019.12.16",
   "description": "Client for Mysodexo API",
   "main": "src/index.js",
   "bin": {
@@ -11,11 +11,11 @@
     "src/*.js"
   ],
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest --verbose --coverage src/*test.js",
     "test:coveralls": "jest --coverage && coveralls < coverage/lcov.info",
     "lint": "eslint src/*.js",
-    "test:inspect": "node --inspect node_modules/.bin/jest --runInBand src/index.test.js",
-    "test:debug": "node debug node_modules/.bin/jest --runInBand src/index.test.js",
+    "test:inspect": "node --inspect node_modules/.bin/jest --runInBand src/*.test.js",
+    "test:debug": "node debug node_modules/.bin/jest --runInBand src/*.test.js",
     "run:api": "node src/index.js",
     "run:api:inspect": "node --inspect src/index.js",
     "run:api:debug": "node debug src/index.js",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/AndreMiras/mysodexojs.git"
+    "url": "git+ssh://git@github.com/AndreMiras/mysodexo.js.git"
   },
   "keywords": [
     "mysodexo"
@@ -31,9 +31,9 @@
   "author": "Andre Miras",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/AndreMiras/mysodexojs/issues"
+    "url": "https://github.com/AndreMiras/mysodexo.js/issues"
   },
-  "homepage": "https://github.com/AndreMiras/mysodexojs",
+  "homepage": "https://github.com/AndreMiras/mysodexo.js",
   "devDependencies": {
     "eslint-plugin-jest": "^23.0.4",
     "jest": "^24.9.0",

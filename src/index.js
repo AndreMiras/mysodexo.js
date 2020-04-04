@@ -22,26 +22,23 @@ const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
 /*
  * Indented JSON.stringify() alias.
  */
-const stringify = (value) => JSON.stringify(value, null, '  ');
+const stringify = value => JSON.stringify(value, null, '  ');
 
 /*
  * Logs value to console as a JSON string.
  */
-const stringifyLog = (value) => {
+const stringifyLog = value =>
   console.log(stringify(value)); // eslint-disable-line no-console
-};
 
 const stripEndpoint = (endpoint) => (endpoint.replace(/^\/+/, ''));
 
-const getFullEndpointUrl = (endpoint, lang) => (
-  `${BASE_URL}/${lang}/${stripEndpoint(endpoint)}`
-);
+const getFullEndpointUrl = (endpoint, lang) =>
+  `${BASE_URL}/${lang}/${stripEndpoint(endpoint)}`;
 
 /*
  * Raises an error if any in the `jsonResponse`.
  */
-const handleCodeMsg = (jsonResponse) => {
-  const { code, msg } = jsonResponse;
+const handleCodeMsg = ({ code, msg }) => {
   assert(code === JSON_RESPONSE_OK_CODE, [code, msg]);
   assert(msg === JSON_RESPONSE_OK_MSG, [code, msg]);
 };
@@ -60,12 +57,13 @@ const sessionPost = (cookieJar, endpoint, jsonData, callback) => {
     cert: fs.readFileSync(certFilePath),
     key: fs.readFileSync(keyFilePath),
   };
-  request.post(options, function (error, response, body) {
+  const postCallback = (error, response, body) => {
     assert(!error, error);
     assert(response && response.statusCode == 200, stringify(response));
     handleCodeMsg(body);
     callback(body.response);
-  });
+  };
+  request.post(options, postCallback);
 };
 
 /*
@@ -80,13 +78,8 @@ const login = (email, password, callback) => {
       deviceUid: DEFAULT_DEVICE_UID,
       os: DEFAULT_OS,
   };
-  sessionPost(cookieJar, endpoint, jsonData, (accountInfo) => {
-    const data = {
-      cookieJar,
-      accountInfo,
-    };
-    callback(data);
-  });
+  sessionPost(cookieJar, endpoint, jsonData, (accountInfo) =>
+    callback({ cookieJar, accountInfo }));
 };
 
 /*
@@ -95,10 +88,8 @@ const login = (email, password, callback) => {
 const getCards = (cookieJar, dni, callback) => {
   const endpoint = GET_CARDS_ENDPOINT;
   const jsonData = { dni };
-  sessionPost(cookieJar, endpoint, jsonData, (response) => {
-    const cardList = response.listCard;
-    callback(cardList);
-  });
+  sessionPost(cookieJar, endpoint, jsonData, ({ listCard }) =>
+    callback(listCard));
 };
 
 /*
@@ -107,10 +98,8 @@ const getCards = (cookieJar, dni, callback) => {
 const getDetailCard = (cookieJar, cardNumber, callback) => {
   const endpoint = GET_DETAIL_CARD_ENDPOINT;
   const jsonData = { cardNumber };
-  sessionPost(cookieJar, endpoint, jsonData, (response) => {
-    const { cardDetail } = response;
-    callback(cardDetail);
-  });
+  sessionPost(cookieJar, endpoint, jsonData, ({ cardDetail }) =>
+    callback(cardDetail));
 };
 
 /*
@@ -119,17 +108,16 @@ const getDetailCard = (cookieJar, cardNumber, callback) => {
 const getClearPin = (cookieJar, cardNumber, callback) => {
   const endpoint = GET_CLEAR_PIN_ENDPOINT;
   const jsonData = { cardNumber };
-  sessionPost(cookieJar, endpoint, jsonData, (response) => {
-    const { pin } = response.clearPin;
-    callback(pin);
-  });
+  const postCallBack = ({ clearPin }) =>
+    callback(clearPin.pin);
+  sessionPost(cookieJar, endpoint, jsonData, postCallBack);
 };
 
 /*
  * Given environment variable `EMAIL` and `PASSWORD` retries card details
  * and triggers `mainCallback`.
  */
-const main = (mainCallback) => {
+const main = mainCallback => {
   const email = process.env.EMAIL;
   const password = process.env.PASSWORD;
   const getDetailCardCallback = (cardDetail) => {
@@ -138,7 +126,7 @@ const main = (mainCallback) => {
     stringifyLog(cardDetail);
     typeof mainCallback == 'function' && mainCallback();
   };
-  const getCardsCallback = (cookieJar) => (cardList) => {
+  const getCardsCallback = cookieJar => cardList => {
     const cards = cardList;
     console.log('cards:'); // eslint-disable-line no-console
     stringifyLog(cardList);
@@ -146,17 +134,15 @@ const main = (mainCallback) => {
     const { cardNumber } = card;
     getDetailCard(cookieJar, cardNumber, getDetailCardCallback);
   };
-  const loginCallback = (response) => {
-    const { cookieJar, accountInfo } = response;
+  const loginCallback = ({ cookieJar, accountInfo }) => {
     console.log('account info:'); // eslint-disable-line no-console
     stringifyLog(accountInfo);
-    const { dni } = accountInfo;
-    getCards(cookieJar, dni, getCardsCallback(cookieJar));
+    getCards(cookieJar, accountInfo.dni, getCardsCallback(cookieJar));
   };
   login(email, password, loginCallback);
 };
 
 const mainIsModule = (module, main) => main === module;
-mainIsModule(require.main, module) ? main() : null;
+mainIsModule(require.main, module) && main();
 
 module.exports = { stringifyLog, sessionPost, login, getCards, getDetailCard, getClearPin, main };

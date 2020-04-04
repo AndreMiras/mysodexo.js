@@ -33,20 +33,20 @@ const baseDataDir = () => (
 /*
  * Returns file path used to store the session cookie.
  */
-const getSessionCachePath = () => path.join(baseDataDir(), APPLICATION_NAME, SESSION_CACHE_FILENAME);
+const getSessionCachePath = () => path.join(exports.baseDataDir(), APPLICATION_NAME, SESSION_CACHE_FILENAME);
 
 /*
  * Returns session and DNI from cache.
  */
 const getCachedSessionInfo = () => (
-  JSON.parse(fs.readFileSync(getSessionCachePath()))
+  JSON.parse(fs.readFileSync(exports.getSessionCachePath()))
 );
 
 /*
  * Stores session info to cache.
  */
 const cacheSessionInfo = (cookieJar, dni) => {
-  const sessionCachePath = getSessionCachePath();
+  const sessionCachePath = exports.getSessionCachePath();
   const cookies = cookieJar.getCookieString(BASE_URL);
   const cachedSessionInfo = {
     cookies,
@@ -62,15 +62,13 @@ const cacheSessionInfo = (cookieJar, dni) => {
 const login = (callback) => {
   const loginCallback = (response) => {
     const { cookieJar, accountInfo } = response;
-    console.log('account info:'); // eslint-disable-line no-console
-    api.stringifyLog(accountInfo);
     const { dni } = accountInfo;
     callback(cookieJar, dni);
   };
   const promptLoginCallback = (email, password) => {
     api.login(email, password, loginCallback);
   };
-  promptLogin(promptLoginCallback);
+  exports.promptLogin(promptLoginCallback);
 };
 
 /*
@@ -79,10 +77,10 @@ const login = (callback) => {
  */
 const processLogin = (callback) => {
   const loginCallback = (cookieJar, dni) => {
-    cacheSessionInfo(cookieJar, dni);
+    exports.cacheSessionInfo(cookieJar, dni);
     typeof callback == 'function' && callback(cookieJar, dni);
   };
-  login(loginCallback);
+  exports.login(loginCallback);
 };
 
 /*
@@ -90,33 +88,47 @@ const processLogin = (callback) => {
  */
 const getSessionOrLogin = (callback) => {
   try {
-    const { cookies, dni } = getCachedSessionInfo();
+    const { cookies, dni } = exports.getCachedSessionInfo();
     const cookieJar = request.jar();
     const cookie = request.cookie(cookies);
     cookieJar.setCookie(cookie, BASE_URL);
     callback(cookieJar, dni);
   } catch (exception) {
-    exception.code === 'ENOENT' ? processLogin(callback) : (() => {throw exception})();
+    exception.code === 'ENOENT' ? exports.processLogin(callback) : (() => {throw exception})();
   }
+};
+
+/*
+ * Prints per card balance.
+ */
+const printBalance = (cardsDetails) => {
+  cardsDetails.forEach((cardDetail) => {
+    console.log(`${cardDetail.pan}: ${cardDetail.cardBalance}`); // eslint-disable-line no-console
+  });
 };
 
 /*
  * Retrieves and prints balance per card.
  */
-const processBalance = () => {
-  const getDetailCardCallback = (card) => (cardDetail) => {
-    console.log(`${card.pan}: ${cardDetail.cardBalance}`); // eslint-disable-line no-console
+const processBalance = (callback) => {
+  let cardsDetails = [];
+  const processBalanceCallback = (cardsDetails) => {
+    printBalance(cardsDetails);
+    typeof callback == 'function' && callback(cardsDetails);
+  };
+  const getDetailCardCallback = (total) => (cardDetail) => {
+    cardsDetails = cardsDetails.concat([cardDetail]);
+    cardsDetails.length === total && processBalanceCallback(cardsDetails);
   };
   const getCardsCallback = (cookieJar) => (cardList) => {
-    const cards = cardList;
-    cards.forEach((card) => {
-      api.getDetailCard(cookieJar, card.cardNumber, getDetailCardCallback(card));
+    cardList.forEach((card) => {
+      api.getDetailCard(cookieJar, card.cardNumber, getDetailCardCallback(cardList.length));
     });
   };
   const getSessionOrLoginCallback = (cookieJar, dni) => {
     api.getCards(cookieJar, dni, getCardsCallback(cookieJar));
   };
-  getSessionOrLogin(getSessionOrLoginCallback);
+  exports.getSessionOrLogin(getSessionOrLoginCallback);
 };
 
 const help = () => {
@@ -128,13 +140,35 @@ const help = () => {
   );
 };
 
-const main = () => {
-  const args = process.argv.slice(2);
-  const arg2Function = arg => ({ login: processLogin, balance: processBalance }[arg] || help);
+const main = (argv) => {
+  const args = argv.slice(2);
+  const arg2FunctionMap = {
+    login: exports.processLogin,
+    balance: exports.processBalance,
+    help: exports.help,
+  };
+  // defaults to help if unknown
+  const arg2Function = arg => (arg2FunctionMap[arg] || exports.help);
+  // defaults to help if no args provided
   const arg = args[0] ? args[0].replace(/^--/, '') : 'help';
   const fun = arg2Function(arg);
   fun();
 };
 
 const mainIsModule = (module, main) => main === module;
-mainIsModule(require.main, module) ? main() : null;
+
+module.exports = {
+  promptLogin,
+  baseDataDir,
+  getSessionCachePath,
+  getCachedSessionInfo,
+  cacheSessionInfo,
+  login,
+  processLogin,
+  getSessionOrLogin,
+  processBalance,
+  help,
+  main,
+};
+exports = module.exports;
+mainIsModule(require.main, module) && main(process.argv);
