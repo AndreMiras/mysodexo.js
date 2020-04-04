@@ -1,8 +1,9 @@
 # Change Log
 
-## [Unreleased]
+## [2019.12.16]
 
  - unit test CLI, refs #8
+ - improve some readability, refs #9
 
 ## [2019.12.08]
 
