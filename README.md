@@ -1,6 +1,6 @@
 # Mysodexo JavaScript client
 
-[![Build Status](https://travis-ci.com/AndreMiras/mysodexo.js.svg?branch=main)](https://travis-ci.com/AndreMiras/mysodexo.js)
+[![Tests](https://github.com/AndreMiras/mysodexo.js/workflows/Tests/badge.svg)](https://github.com/AndreMiras/mysodexo.js/actions/workflows/tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/AndreMiras/mysodexo.js/badge.svg?branch=main)](https://coveralls.io/github/AndreMiras/mysodexo.js?branch=main)
 [![npm version](https://badge.fury.io/js/mysodexo.svg)](https://badge.fury.io/js/mysodexo)
 
