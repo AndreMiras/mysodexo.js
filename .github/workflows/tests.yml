@@ -10,6 +10,7 @@ jobs:
       - uses: actions/setup-node@v2
       - run: yarn install
       - run: yarn lint
+      - run: yarn build
       - name: Tests
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}

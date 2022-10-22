@@ -2,24 +2,26 @@
   "name": "mysodexo",
   "version": "2022.10.22",
   "description": "Client for Mysodexo API",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
-    "mysodexo": "src/cli.js"
+    "mysodexo": "dist/cli.js"
   },
   "files": [
     "src/sodexows.mo2o.com_client-android.*.pem",
     "src/*.js"
   ],
   "scripts": {
-    "test": "jest --verbose --coverage src/*test.js",
-    "test:coveralls": "jest --coverage && coveralls < coverage/lcov.info",
-    "lint": "eslint src/*.js",
-    "test:inspect": "node --inspect node_modules/.bin/jest --runInBand src/*.test.js",
-    "test:debug": "node debug node_modules/.bin/jest --runInBand src/*.test.js",
-    "run:api": "node src/index.js",
-    "run:api:inspect": "node --inspect src/index.js",
-    "run:api:debug": "node debug src/index.js",
-    "run:cli": "node cli.js"
+    "test": "node --require ts-node/register node_modules/.bin/jest --verbose --coverage src/*test.ts",
+    "test:coveralls": "yarn test && coveralls < coverage/lcov.info",
+    "test:debug": "node --inspect --loader ts-node/esm --require ts-node/register node_modules/.bin/jest --runInBand src/*.test.ts",
+    "run:api": "ts-node src/index.ts",
+    "run:api:inspect": "ts-node --inspect src/index.ts",
+    "run:api:debug": "node debug src/index.ts",
+    "run:cli": "ts-node src/cli.ts",
+    "lint": "prettier --check src docs .github *.md",
+    "format": "prettier --write src docs .github *.md",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -35,9 +37,18 @@
   },
   "homepage": "https://github.com/AndreMiras/mysodexo.js",
   "devDependencies": {
-    "eslint-plugin-jest": "^23.0.4",
+    "@babel/core": "^7.19.6",
+    "@babel/preset-env": "^7.19.4",
+    "@babel/preset-typescript": "^7.18.6",
+    "@types/jest": "^29.2.0",
+    "@types/node": "^18.11.3",
+    "@types/read": "^0.0.29",
+    "@types/request": "^2.48.8",
+    "babel-jest": "^29.2.1",
     "jest": "^24.9.0",
-    "rewire": "^4.0.1"
+    "prettier": "^2.7.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "coveralls": "^3.0.8",

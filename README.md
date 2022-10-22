@@ -6,22 +6,27 @@
 
 A Javascript client for the Mysodexo [reverse engineered API](https://medium.com/@andre.miras/reverse-engineering-sodexos-api-d13710b7bf0d).
 
-
 ## Install & Usage
+
 Install it with npm.
+
 ```sh
 npm install mysodexo
 ```
+
 Then use the command line client.
+
 ```sh
 mysodexo --balance
 ```
+
 Or the library.
+
 ```js
-const { login } = require('mysodexo');
+const { login } = require("mysodexo");
 const loginCallback = (response) => {
   const { cookieJar, accountInfo } = response;
-  console.log('account info:', accountInfo);
+  console.log("account info:", accountInfo);
 };
-login('foo@bar.com', 'password', loginCallback);
+login("foo@bar.com", "password", loginCallback);
 ```
