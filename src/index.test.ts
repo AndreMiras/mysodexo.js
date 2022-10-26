@@ -1,10 +1,12 @@
-import request from "request";
-const assert = require("assert");
+import assert from "assert";
+import fetch from "node-fetch";
 import * as index from "./index";
 
-jest.mock("request");
+jest.mock("node-fetch", () => jest.fn());
+const fetchMock = fetch as unknown as jest.Mock;
 
 beforeEach(() => {
+  jest.clearAllMocks();
   jest.resetModules();
 });
 
@@ -55,44 +57,38 @@ describe("handleCodeMsg", () => {
   });
 });
 
-const mockRequestPost = (responseBody: any) =>
-  jest.fn((options, callback) => {
-    const error = null;
-    const response = {
-      statusCode: 200,
-    };
-    callback(error, response, responseBody);
-  });
+const fetchResponse = (responseJson: any = {}, cookie: string = "") => ({
+  ok: true,
+  status: 200,
+  headers: {
+    raw: () => ({ "set-cookie": [cookie] }),
+  },
+  json: () => responseJson,
+});
 
-const mockRequest = (post: any, jar: any = {}) => {
-  request.post = post;
-  request.jar = jar;
-};
+const mockFetch = (responseJson: any = {}, cookie: string = "") =>
+  fetchMock.mockImplementation(() =>
+    Promise.resolve(fetchResponse(responseJson, cookie))
+  );
 
 describe("sessionPost", () => {
-  it("base", (done) => {
+  it("base", async () => {
     const endpoint = "/foo/bar";
     const jsonData = {};
-    const expected = {};
+    const expectedResponse = { key: "value" };
     const responseBody = {
       code: 100,
       msg: "OK",
-      response: {},
+      response: expectedResponse,
     };
-    const post = mockRequestPost(responseBody);
-    mockRequest(post);
+    mockFetch(responseBody);
     const sessionPost = index.sessionPost;
-    const cookieJar = {};
-    const callback = (jsonResponse: any) => {
-      expect(post.mock.calls.length).toBe(1);
-      expect(post.mock.calls[0][0].url.endsWith(endpoint)).toBe(true);
-      expect(post.mock.calls[0][0].json).toBe(jsonData);
-      expect(jsonResponse).toEqual(expected);
-      done();
-    };
-    expect(sessionPost(cookieJar, endpoint, jsonData, callback)).toBe(
-      undefined
-    );
+    const cookie = "";
+    const jsonResponse = await sessionPost(cookie, endpoint, jsonData);
+    expect(fetchMock.mock.calls.length).toBe(1);
+    expect(fetchMock.mock.calls[0][0].endsWith(endpoint)).toBe(true);
+    expect(fetchMock.mock.calls[0][1].body).toEqual(JSON.stringify(jsonData));
+    expect(jsonResponse).toEqual(expectedResponse);
   });
 });
 
@@ -149,22 +145,18 @@ const loginResponse = {
 };
 
 describe("login", () => {
-  it("base", (done) => {
+  it("base", async () => {
     const email = "foo@bar.com";
     const password = "password";
-    const expectedCookieJar = {};
-    const post = mockRequestPost(loginResponse);
-    const jar = () => expectedCookieJar;
-    mockRequest(post, jar);
+    const expectedCookie = "PHPSESSID=0123456789abcdef0123456789";
+    const extendedCookie = `${expectedCookie}; expires=Sat, 28-Jan-2023 13:37:00 GMT; Max-Age=7776000; path=/`;
+    mockFetch(loginResponse, extendedCookie);
     const login = index.login;
-    const callback = (response: any) => {
-      const { cookieJar, accountInfo } = response;
-      expect(post.mock.calls.length).toBe(1);
-      expect(cookieJar).toEqual(expectedCookieJar);
-      expect(accountInfo).toEqual(loginResponse.response);
-      done();
-    };
-    expect(login(email, password, callback)).toBe(undefined);
+    const response = await login(email, password);
+    const { cookie, accountInfo } = response;
+    expect(fetchMock.mock.calls.length).toBe(1);
+    expect(cookie).toEqual(expectedCookie);
+    expect(accountInfo).toEqual(loginResponse.response);
   });
 });
 
@@ -199,17 +191,14 @@ const getCardsResponse = {
 };
 
 describe("getCards", () => {
-  it("base", (done) => {
-    const cookieJar = {};
+  it("base", async () => {
+    const cookie = "";
     const dni = "123456789";
-    const post = mockRequestPost(getCardsResponse);
-    mockRequest(post);
+    mockFetch(getCardsResponse);
     const getCards = index.getCards;
-    const callback = (cardList: any) => {
-      expect(cardList).toEqual(getCardsResponse.response.listCard);
-      done();
-    };
-    expect(getCards(cookieJar, dni, callback)).toBe(undefined);
+    const cardList = await getCards(cookie, dni);
+    expect(fetchMock.mock.calls.length).toBe(1);
+    expect(cardList).toEqual(getCardsResponse.response.listCard);
   });
 });
 
@@ -272,24 +261,20 @@ const getDetailCardResponse = {
 };
 
 describe("getDetailCard", () => {
-  it("base", (done) => {
-    const cookieJar = {};
+  it("base", async () => {
+    const cookie = "";
     const cardNumber = "1234567897901234";
-    const post = mockRequestPost(getDetailCardResponse);
-    mockRequest(post);
+    mockFetch(getDetailCardResponse);
     const getDetailCard = index.getDetailCard;
-    const callback = (cardList: any) => {
-      expect(post.mock.calls.length).toBe(1);
-      expect(cardList).toEqual(getDetailCardResponse.response.cardDetail);
-      done();
-    };
-    expect(getDetailCard(cookieJar, cardNumber, callback)).toBe(undefined);
+    const cardList = await getDetailCard(cookie, cardNumber);
+    expect(fetchMock.mock.calls.length).toBe(1);
+    expect(cardList).toEqual(getDetailCardResponse.response.cardDetail);
   });
 });
 
 describe("getClearPin", () => {
-  it("base", (done) => {
-    const cookieJar = {};
+  it("base", async () => {
+    const cookie = "";
     const cardNumber = "1234567897901234";
     const expectedPin = "1234";
     const responseBody = {
@@ -301,33 +286,27 @@ describe("getClearPin", () => {
         },
       },
     };
-    const post = mockRequestPost(responseBody);
-    mockRequest(post);
+    mockFetch(responseBody);
     const getClearPin = index.getClearPin;
-    const callback = (pin: string) => {
-      expect(post.mock.calls.length).toBe(1);
-      expect(pin).toEqual(expectedPin);
-      done();
-    };
-    expect(getClearPin(cookieJar, cardNumber, callback)).toBe(undefined);
+    const pin = await getClearPin(cookie, cardNumber);
+    expect(fetchMock.mock.calls.length).toBe(1);
+    expect(pin).toEqual(expectedPin);
   });
 });
 
 /*
- * Mocks different response depending on the `perUrlResponseBody` and
+ * Mock different response depending on the `perUrlResponseBody` and
  * `options.url` objects.
  */
-const mockRequestPostPerUrl = (perUrlResponseBody: any) =>
-  jest.fn((options, callback) => {
-    const responseBody = perUrlResponseBody[options.url];
-    mockRequestPost(responseBody)(options, callback);
+const mockFetchPerUrl = (perUrlResponseBody: Record<string, any>) =>
+  fetchMock.mockImplementation((url, options) => {
+    return Promise.resolve(fetchResponse(perUrlResponseBody[url]));
   });
 
 describe("main", () => {
   const OLD_ENV = process.env;
 
   beforeEach(() => {
-    jest.resetModules(); // most important - it clears the cache
     process.env = { ...OLD_ENV }; // make a copy
   });
 
@@ -335,7 +314,7 @@ describe("main", () => {
     process.env = OLD_ENV; // restore old env
   });
 
-  it("base", (done) => {
+  it("base", async () => {
     process.env = { ...OLD_ENV, EMAIL: "email@foo.bar", PASSWORD: "password" };
     // keeps the output clean, by mocking the `console.log()`
     const spyLog = jest.spyOn(console, "log").mockImplementation();
@@ -350,18 +329,13 @@ describe("main", () => {
       [getCardsUrl]: getCardsResponse,
       [getDetailCardUrl]: getDetailCardResponse,
     };
-    const post = mockRequestPostPerUrl(perUrlResponseBody);
-    const jar = () => ({});
-    mockRequest(post, jar);
+    const post = mockFetchPerUrl(perUrlResponseBody);
     const main = index.main;
-    const callback = () => {
-      spyLog.mockRestore();
-      expect(post.mock.calls.length).toBe(3);
-      expect(post.mock.calls[0][0].url).toBe(loginUrl);
-      expect(post.mock.calls[1][0].url).toBe(getCardsUrl);
-      expect(post.mock.calls[2][0].url).toBe(getDetailCardUrl);
-      done();
-    };
-    expect(main(callback)).toBe(undefined);
+    await main();
+    spyLog.mockRestore();
+    expect(post.mock.calls.length).toBe(3);
+    expect(fetchMock.mock.calls[0][0]).toBe(loginUrl);
+    expect(fetchMock.mock.calls[1][0]).toBe(getCardsUrl);
+    expect(fetchMock.mock.calls[2][0]).toBe(getDetailCardUrl);
   });
 });

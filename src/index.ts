@@ -1,5 +1,6 @@
-import { ok } from "assert";
-import request from "request";
+import assert from "assert";
+import https from "https";
+import fetch, { Response } from "node-fetch";
 import * as fs from "fs";
 import * as path from "path";
 import { BASE_URL } from "./constants";
@@ -14,20 +15,31 @@ const JSON_RESPONSE_OK_MSG = "OK";
 const DEFAULT_DEVICE_UID = "device_uid";
 const DEFAULT_OS = 0;
 
-const CERT_FILENAME = "sodexows.mo2o.com_client-android.crt.pem";
-const KEY_FILENAME = "sodexows.mo2o.com_client-android.key.pem";
+const CERT_FILENAME = "sodexows.mo2o.com_client-android.p12";
 const certFilePath = path.resolve(__dirname, CERT_FILENAME);
-const keyFilePath = path.resolve(__dirname, KEY_FILENAME);
+const CERT_PASSPHRASE = "0d43f1b6ceb6456193975ec4f9459c0d";
+
+interface CodeMsg {
+  code: number | null;
+  msg: string | null;
+}
+
+interface PostResponse {
+  response: Record<string, any>;
+  cookie: string;
+}
 
 /*
  * Indented JSON.stringify() alias.
  */
-const stringify = (value: any) => JSON.stringify(value, null, "  ");
+const stringify = (value: Record<string, any>) =>
+  JSON.stringify(value, null, "  ");
 
 /*
- * Logs value to console as a JSON string.
+ * Log value to console as a JSON string.
  */
-const stringifyLog = (value: any) => console.log(stringify(value)); // eslint-disable-line no-console
+const stringifyLog = (value: Record<string, any>) =>
+  console.log(stringify(value)); // eslint-disable-line no-console
 
 const stripEndpoint = (endpoint: string) => endpoint.replace(/^\/+/, "");
 
@@ -35,139 +47,137 @@ const getFullEndpointUrl = (endpoint: string, lang: string) =>
   `${BASE_URL}/${lang}/${stripEndpoint(endpoint)}`;
 
 /*
- * Raises an error if any in the `jsonResponse`.
+ * Raise an error if any in the `jsonResponse`.
  */
-const handleCodeMsg = ({
-  code,
-  msg,
-}: {
-  code: number | null;
-  msg: string | null;
-}) => {
-  ok(code === JSON_RESPONSE_OK_CODE);
-  ok(msg === JSON_RESPONSE_OK_MSG);
+const handleCodeMsg = ({ code, msg }: CodeMsg) => {
+  assert.deepEqual(
+    { code, msg },
+    { code: JSON_RESPONSE_OK_CODE, msg: JSON_RESPONSE_OK_MSG }
+  );
+};
+
+const parseCookies = (response: Response): string => {
+  const raw = response.headers.raw()["set-cookie"] || [];
+  return raw
+    .map((entry) => {
+      const parts = entry.split(";");
+      const cookiePart = parts[0];
+      return cookiePart;
+    })
+    .join(";");
 };
 
 /*
- * Posts `jsonData` to `endpoint` using the `cookieJar`.
- * Handles errors and callback with the json response.
+ * Post `jsonData` to `endpoint`.
+ * Handle errors and return the `response` key of the body as well as the cookies.
  */
-const sessionPost = (
-  cookieJar: any,
+const post = async (
+  cookie: string,
   endpoint: string,
-  jsonData: any,
-  callback: any
-) => {
+  jsonData: Record<string, any>
+): Promise<PostResponse> => {
   const lang = "en";
   const url = getFullEndpointUrl(endpoint, lang);
+  const pfx = fs.readFileSync(certFilePath);
+  const passphrase = CERT_PASSPHRASE;
+  const agent = new https.Agent({ pfx, passphrase });
+  const headers = {
+    "content-type": "application/json",
+    accept: "application/json",
+    cookie,
+  };
   const options = {
-    url,
-    json: jsonData,
-    jar: cookieJar,
-    cert: fs.readFileSync(certFilePath),
-    key: fs.readFileSync(keyFilePath),
+    method: "POST",
+    agent,
+    body: JSON.stringify(jsonData),
+    headers,
   };
-  const postCallback = (error: any, response: request.Response, body: any) => {
-    ok(!error);
-    ok(response && response.statusCode == 200, stringify(response));
-    handleCodeMsg(body);
-    callback(body.response);
-  };
-  request.post(options, postCallback);
+  const response = await fetch(url, options);
+  const data = await response.json();
+  handleCodeMsg(data as CodeMsg);
+  return { response: data.response, cookie: parseCookies(response) };
 };
 
 /*
- * Logins with credentials and returns session and account info.
+ * Wrap `post()` and only return the response (omit the cookie).
  */
-const login = (email: string, password: string, callback: any) => {
+const sessionPost = async (
+  cookie: string,
+  endpoint: string,
+  jsonData: Record<string, any>
+): Promise<Record<string, any>> => {
+  return (await post(cookie, endpoint, jsonData)).response;
+};
+
+/*
+ * Login with credentials and return session and account info.
+ */
+const login = async (email: string, password: string) => {
   const endpoint = LOGIN_ENDPOINT;
-  const cookieJar = request.jar();
+  const cookies = "";
   const jsonData = {
     username: email,
     pass: password,
     deviceUid: DEFAULT_DEVICE_UID,
     os: DEFAULT_OS,
   };
-  sessionPost(cookieJar, endpoint, jsonData, (accountInfo: any) =>
-    callback({ cookieJar, accountInfo })
+  const { response: accountInfo, cookie } = await post(
+    cookies,
+    endpoint,
+    jsonData
   );
+  return { accountInfo, cookie };
 };
 
 /*
- * Returns cards list and details using the cookie provided.
+ * Return cards list and details using the cookie provided.
  */
-const getCards = (cookieJar: any, dni: string, callback: any) => {
+const getCards = async (cookie: string, dni: string) => {
   const endpoint = GET_CARDS_ENDPOINT;
   const jsonData = { dni };
-  sessionPost(
-    cookieJar,
-    endpoint,
-    jsonData,
-    ({ listCard }: { listCard: any[] }) => callback(listCard)
-  );
+  const { listCard } = await sessionPost(cookie, endpoint, jsonData);
+  return listCard;
 };
 
 /*
- * Returns card details.
+ * Return card details.
  */
-const getDetailCard = (cookieJar: any, cardNumber: string, callback: any) => {
+const getDetailCard = async (cookie: string, cardNumber: string) => {
   const endpoint = GET_DETAIL_CARD_ENDPOINT;
   const jsonData = { cardNumber };
-  sessionPost(
-    cookieJar,
-    endpoint,
-    jsonData,
-    ({ cardDetail }: { cardDetail: any }) => callback(cardDetail)
-  );
+  const { cardDetail } = await sessionPost(cookie, endpoint, jsonData);
+  return cardDetail;
 };
 
 /*
- * Returns card pin.
+ * Return card pin.
  */
-const getClearPin = (cookieJar: any, cardNumber: string, callback: any) => {
+const getClearPin = async (cookie: string, cardNumber: string) => {
   const endpoint = GET_CLEAR_PIN_ENDPOINT;
   const jsonData = { cardNumber };
-  const postCallBack = ({ clearPin }: GetClearPinResponse) =>
-    callback(clearPin.pin);
-  sessionPost(cookieJar, endpoint, jsonData, postCallBack);
+  const { clearPin } = await sessionPost(cookie, endpoint, jsonData);
+  return clearPin.pin;
 };
 
 /*
- * Given environment variable `EMAIL` and `PASSWORD` retries card details
- * and triggers `mainCallback`.
+ * Given environment variable `EMAIL` and `PASSWORD` retrieve card details.
  */
-const main = (mainCallback: any = null) => {
+const main = async () => {
   const email = process.env.EMAIL;
   const password = process.env.PASSWORD;
-  ok(email);
-  ok(password);
-  const getDetailCardCallback = (cardDetail: any) => {
-    const { cardNumber } = cardDetail;
-    console.log(`details ${cardNumber}:`); // eslint-disable-line no-console
-    stringifyLog(cardDetail);
-    typeof mainCallback == "function" && mainCallback();
-  };
-  const getCardsCallback =
-    (cookieJar: request.CookieJar) => (cardList: any[]) => {
-      const cards = cardList;
-      console.log("cards:"); // eslint-disable-line no-console
-      stringifyLog(cardList);
-      const card = cards[0];
-      const { cardNumber } = card;
-      getDetailCard(cookieJar, cardNumber, getDetailCardCallback);
-    };
-  const loginCallback = ({
-    cookieJar,
-    accountInfo,
-  }: {
-    cookieJar: request.CookieJar;
-    accountInfo: any;
-  }) => {
-    console.log("account info:"); // eslint-disable-line no-console
-    stringifyLog(accountInfo);
-    getCards(cookieJar, accountInfo.dni, getCardsCallback(cookieJar));
-  };
-  login(email, password, loginCallback);
+  assert.ok(email);
+  assert.ok(password);
+  const { cookie, accountInfo } = await login(email, password);
+  console.log("account info:"); // eslint-disable-line no-console
+  stringifyLog(accountInfo);
+  const cards = await getCards(cookie, accountInfo.dni);
+  console.log("cards:"); // eslint-disable-line no-console
+  stringifyLog(cards);
+  const card = cards[0];
+  const { cardNumber } = card;
+  console.log(`details ${cardNumber}:`); // eslint-disable-line no-console
+  const cardDetail = await getDetailCard(cookie, cardNumber);
+  stringifyLog(cardDetail);
 };
 
 const mainIsModule = (module: any, main: any) => main === module;

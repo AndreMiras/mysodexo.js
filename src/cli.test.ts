@@ -1,8 +1,7 @@
-import * as request from "request";
 import read from "read";
-import { PromptLoginCallbackType } from "./cli";
 
 beforeEach(() => {
+  jest.clearAllMocks();
   jest.resetModules();
 });
 
@@ -11,10 +10,10 @@ const requireCli = () => require("./cli");
 const mockReadCredentials = (email: string, password: string) => {
   const readMock = jest.fn();
   readMock.mockImplementationOnce((options: any, callback: any) =>
-    callback({}, email)
+    callback(null, email)
   );
   readMock.mockImplementationOnce((options: any, callback: any) =>
-    callback({}, password)
+    callback(null, password)
   );
   jest.doMock("read", () => ({
     __esModule: true,
@@ -23,26 +22,23 @@ const mockReadCredentials = (email: string, password: string) => {
 };
 
 const mockApiLogin = (apiLoginResponse: any) =>
-  jest.fn((email, password, loginCallback) => loginCallback(apiLoginResponse));
+  jest.fn((email, password) => apiLoginResponse);
 
-const mockProcessLogin = (cookieJar: any, dni: string) =>
-  jest.fn((callback) => callback(cookieJar, dni));
+const mockProcessLogin = (cookie: string, dni: string) =>
+  jest.fn(() => ({ cookie, dni }));
 
 const doMockApiLogin = (login: any) =>
   jest.doMock("./index", () => ({ login }));
 
 describe("promptLogin", () => {
-  it("base", (done) => {
+  it("base", async () => {
     const expectedEmail = "foo@bar.com";
     const expectedPassword = "password";
     mockReadCredentials(expectedEmail, expectedPassword);
-    const callback = (email: string, password: string) => {
-      expect(email).toEqual(expectedEmail);
-      expect(password).toEqual(expectedPassword);
-      done();
-    };
     const { promptLogin } = requireCli();
-    promptLogin(callback);
+    const { email, password } = await promptLogin();
+    expect(email).toEqual(expectedEmail);
+    expect(password).toEqual(expectedPassword);
   });
 });
 
@@ -111,11 +107,9 @@ describe("cacheSessionInfo", () => {
     }));
     const { cacheSessionInfo } = requireCli();
     const getCookieString = jest.fn();
-    const cookieJar = {
-      getCookieString,
-    };
+    const cookie = "PHPSESSID=0123456789abcdef0123456789";
     const dni = "123456789";
-    expect(cacheSessionInfo(cookieJar, dni)).toEqual(expected);
+    expect(cacheSessionInfo(cookie, dni)).toEqual(expected);
     expect(mkdirSync.mock.calls.length).toBe(1);
     expect(mkdirSync.mock.calls[0][0].endsWith("/mysodexo")).toBe(true);
     expect(mkdirSync.mock.calls[0][1]).toEqual({ recursive: true });
@@ -123,7 +117,9 @@ describe("cacheSessionInfo", () => {
     expect(
       writeFileSync.mock.calls[0][0].endsWith("/mysodexo/session.cache")
     ).toBe(true);
-    expect(writeFileSync.mock.calls[0][1]).toEqual(JSON.stringify({ dni }));
+    expect(writeFileSync.mock.calls[0][1]).toEqual(
+      JSON.stringify({ cookie, dni })
+    );
   });
 });
 
@@ -132,60 +128,55 @@ describe("login", () => {
     jest.unmock("./index");
   });
 
-  it("base", (done) => {
-    const expected = undefined;
+  it("base", async () => {
     const expectedEmail = "foo@bar.com";
     const expectedPassword = "password";
-    const expectedCookieJar = {};
+    const expectedCookie = "PHPSESSID=0123456789abcdef0123456789";
     const expectedDni = "123456789";
     const accountInfo = { dni: expectedDni };
     const apiLoginResponse = {
-      cookieJar: expectedCookieJar,
+      cookie: expectedCookie,
       accountInfo,
     };
     const apiLogin = mockApiLogin(apiLoginResponse);
     doMockApiLogin(apiLogin);
-    const promptLogin = (promptLoginCallback: PromptLoginCallbackType) =>
-      promptLoginCallback(expectedEmail, expectedPassword);
+    const promptLogin = jest.fn(() => ({
+      email: expectedEmail,
+      password: expectedPassword,
+    }));
     const cli = requireCli();
     cli.promptLogin = promptLogin;
-    const callback = (cookieJar: request.CookieJar, dni: string) => {
-      expect(apiLogin.mock.calls.length).toBe(1);
-      expect(apiLogin.mock.calls[0][0]).toEqual(expectedEmail);
-      expect(apiLogin.mock.calls[0][1]).toEqual(expectedPassword);
-      expect(cookieJar).toEqual(expectedCookieJar);
-      expect(dni).toEqual(expectedDni);
-      done();
-    };
-    expect(cli.login(callback)).toEqual(expected);
+    const { cookie, dni } = await cli.login();
+    expect(promptLogin.mock.calls.length).toBe(1);
+    expect(apiLogin.mock.calls.length).toBe(1);
+    expect(apiLogin.mock.calls[0][0]).toEqual(expectedEmail);
+    expect(apiLogin.mock.calls[0][1]).toEqual(expectedPassword);
+    expect(cookie).toEqual(expectedCookie);
+    expect(dni).toEqual(expectedDni);
   });
 });
 
 describe("processLogin", () => {
-  it("base", (done) => {
-    const expected = undefined;
-    const expectedCookieJar = {};
+  it("base", async () => {
+    const expectedCookie = "PHPSESSID=0123456789abcdef0123456789";
     const expectedDni = "123456789";
-    const login = jest.fn((loginCallback) =>
-      loginCallback(expectedCookieJar, expectedDni)
+    const login = jest.fn(() =>
+      jest.fn().mockResolvedValue({ cookie: expectedCookie, dni: expectedDni })
     );
     const cacheSessionInfo = jest.fn();
     const cli = requireCli();
     cli.login = login;
     cli.cacheSessionInfo = cacheSessionInfo;
-    const callback = (cookieJar: request.CookieJar, dni: string) => {
-      expect(login.mock.calls.length).toBe(1);
-      expect(login.mock.calls[0][0]).toBeInstanceOf(Function);
-      expect(cacheSessionInfo.mock.calls.length).toBe(1);
-      expect(cacheSessionInfo.mock.calls[0]).toEqual([
-        expectedCookieJar,
-        expectedDni,
-      ]);
-      expect(cookieJar).toEqual(expectedCookieJar);
-      expect(dni).toEqual(expectedDni);
-      done();
-    };
-    expect(cli.processLogin(callback)).toEqual(expected);
+    const { cookie, dni } = await cli.processLogin();
+    expect(login.mock.calls.length).toBe(1);
+    expect(cacheSessionInfo.mock.calls.length).toBe(1);
+    return;
+    expect(cacheSessionInfo.mock.calls[0]).toEqual([
+      expectedCookie,
+      expectedDni,
+    ]);
+    expect(cookie).toEqual(expectedCookie);
+    expect(dni).toEqual(expectedDni);
   });
 });
 
@@ -194,30 +185,26 @@ describe("getSessionOrLogin", () => {
     jest.unmock("fs");
   });
 
-  it("session file exists", (done) => {
-    const expected = undefined;
-    const cookies = "cookieKey=cookieValue";
+  it("session file exists", () => {
+    const expectedCookie = "cookieKey=cookieValue";
     const expectedDni = "123456789";
-    const sessionInfo = { cookies, dni: expectedDni };
+    const sessionInfo = { cookie: expectedCookie, dni: expectedDni };
     const readFileSync = () => JSON.stringify(sessionInfo);
     jest.doMock("fs", () => ({
       readFileSync,
     }));
     const { getSessionOrLogin } = requireCli();
-    const callback = (cookieJar: request.CookieJar, dni: string) => {
-      const { BASE_URL } = require("./constants");
-      expect(cookieJar.getCookieString(BASE_URL)).toEqual(cookies);
-      expect(dni).toEqual(expectedDni);
-      done();
-    };
-    expect(getSessionOrLogin(callback)).toEqual(expected);
+    const { cookie, dni } = getSessionOrLogin();
+    const { BASE_URL } = require("./constants");
+    expect(cookie).toEqual(expectedCookie);
+    expect(dni).toEqual(expectedDni);
   });
 
   /*
    * The `getSessionOrLogin()` function should fallback to login
    * if session cache file isn't available.
    */
-  it("session file does not exists", (done) => {
+  it("session file does not exists", async () => {
     const expected = undefined;
     const error: NodeJS.ErrnoException = new Error();
     error.code = "ENOENT";
@@ -227,43 +214,30 @@ describe("getSessionOrLogin", () => {
     jest.doMock("fs", () => ({
       readFileSync,
     }));
-    const expectedCookieJar = {};
+    const expectedCookie = "cookieKey=cookieValue";
     const expectedDni = "123456789";
-    const processLogin = mockProcessLogin(expectedCookieJar, expectedDni);
+    const processLogin = mockProcessLogin(expectedCookie, expectedDni);
     const cli = requireCli();
     cli.processLogin = processLogin;
-    const callback = (cookieJar: request.CookieJar, dni: string) => {
-      expect(processLogin.mock.calls.length).toBe(1);
-      expect(processLogin.mock.calls[0][0]).toBeInstanceOf(Function);
-      expect(cookieJar).toEqual(expectedCookieJar);
-      expect(dni).toEqual(expectedDni);
-      done();
-    };
-    expect(cli.getSessionOrLogin(callback)).toEqual(expected);
+    const { cookie, dni } = await cli.getSessionOrLogin();
+    expect(processLogin.mock.calls.length).toBe(1);
+    expect(cookie).toEqual(expectedCookie);
+    expect(dni).toEqual(expectedDni);
   });
 
   /*
    * The `getSessionOrLogin()` function should throw if an error != ENOENT is raised.
    */
-  it("session file throw != ENOENT", (done) => {
-    const error = new Error();
+  it("session file throw != ENOENT", async () => {
+    const error = new Error("readFileSync error");
     const readFileSync = () => {
       throw error;
     };
     jest.doMock("fs", () => ({
       readFileSync,
     }));
-    const callback = () => {
-      done.fail(new Error("Did not throw"));
-    };
     const { getSessionOrLogin } = requireCli();
-    try {
-      getSessionOrLogin(callback);
-      done.fail(new Error("Did not throw"));
-    } catch (exception) {
-      expect(exception).toEqual(error);
-    }
-    done();
+    expect(() => getSessionOrLogin()).toThrow(error);
   });
 });
 
@@ -272,30 +246,26 @@ describe("processBalance", () => {
     jest.unmock("./index");
   });
 
-  it("base", (done) => {
+  it("base", async () => {
     const expected = undefined;
-    const expectedCookieJar = {};
+    const expectedCookie = "cookieKey=cookieValue";
     const expectedDni = "123456789";
-    const getSessionOrLogin = jest.fn((callback) =>
-      callback(expectedCookieJar, expectedDni)
-    );
+    const getSessionOrLogin = jest.fn(() => ({
+      cookie: expectedCardNumber,
+      dni: expectedDni,
+    }));
     const expectedCardNumber = "1234567897901234";
     const expectedCard = {
       cardNumber: expectedCardNumber,
     };
     const expectedCardList = [expectedCard];
-    const getCards = jest.fn((cookieJar, dni, getCardsCallback) =>
-      getCardsCallback(expectedCardList)
-    );
+    const getCards = jest.fn((cookie, dni) => expectedCardList);
     const expectedCardDetail = {
       cardBalance: 13.37,
       pan: "123456******1234",
     };
     const expectedCardsDetails = [expectedCardDetail];
-    const getDetailCard = jest.fn(
-      (cookieJar, cardNumber, getDetailCardCallback) =>
-        getDetailCardCallback(expectedCardDetail)
-    );
+    const getDetailCard = jest.fn((cookie, cardNumber) => expectedCardDetail);
     const spyLog = jest.spyOn(console, "log").mockImplementation();
     jest.doMock("./index", () => ({
       getCards,
@@ -303,16 +273,13 @@ describe("processBalance", () => {
     }));
     const cli = requireCli();
     cli.getSessionOrLogin = getSessionOrLogin;
-    const callback = (cardsDetails: any) => {
-      expect(spyLog.mock.calls.length).toBe(1);
-      expect(spyLog.mock.calls[0]).toEqual(["123456******1234: 13.37"]);
-      spyLog.mockRestore();
-      expect(getSessionOrLogin.mock.calls.length).toBe(1);
-      expect(getSessionOrLogin.mock.calls[0][0]).toBeInstanceOf(Function);
-      expect(cardsDetails).toEqual(expectedCardsDetails);
-      done();
-    };
-    expect(cli.processBalance(callback)).toEqual(expected);
+    const cardsDetails = await cli.processBalance();
+
+    expect(spyLog.mock.calls.length).toBe(1);
+    expect(spyLog.mock.calls[0]).toEqual(["123456******1234: 13.37"]);
+    spyLog.mockRestore();
+    expect(getSessionOrLogin.mock.calls.length).toBe(1);
+    expect(cardsDetails).toEqual(expectedCardsDetails);
   });
 });
 
@@ -340,7 +307,7 @@ describe("main", () => {
   it.each([[[]], [["--help"]], [["--unknown"]], [["--help", "--login"]]])(
     "help is called when argv is %s",
     (argv) => {
-      const help = jest.fn(() => {});
+      const help = jest.fn();
       const cli = requireCli();
       cli.help = help;
       cli.main(["node", "cli.js"].concat(argv));
@@ -351,8 +318,8 @@ describe("main", () => {
   it.each([[["--login"]], [["--login", "--unknown"]], [["--login", "--help"]]])(
     "processLogin is called when argv is %s",
     (argv) => {
-      const processLogin = jest.fn(() => {});
-      const help = jest.fn(() => {});
+      const processLogin = jest.fn();
+      const help = jest.fn();
       const cli = requireCli();
       cli.processLogin = processLogin;
       cli.help = help;

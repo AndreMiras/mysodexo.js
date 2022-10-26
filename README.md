@@ -23,10 +23,8 @@ mysodexo --balance
 Or the library.
 
 ```js
-const { login } = require("mysodexo");
-const loginCallback = (response) => {
-  const { cookieJar, accountInfo } = response;
-  console.log("account info:", accountInfo);
-};
-login("foo@bar.com", "password", loginCallback);
+import { login } from "mysodexo";
+login("foo@bar.com", "password").then(({ accountInfo }) =>
+  console.log(accountInfo)
+);
 ```
