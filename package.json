@@ -1,6 +1,6 @@
 {
   "name": "mysodexo",
-  "version": "2022.10.31",
+  "version": "2022.11.01",
   "description": "Client for Mysodexo API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,7 +8,8 @@
     "mysodexo": "dist/cli.js"
   },
   "files": [
-    "src/sodexows.mo2o.com_client-android.p12"
+    "src/sodexows.mo2o.com_client-android.p12",
+    "dist/*.js"
   ],
   "scripts": {
     "test": "node --require ts-node/register node_modules/.bin/jest --verbose --coverage src/*test.ts",
