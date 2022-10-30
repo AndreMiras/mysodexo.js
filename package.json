@@ -1,6 +1,6 @@
 {
   "name": "mysodexo",
-  "version": "2022.10.22",
+  "version": "2022.10.30",
   "description": "Client for Mysodexo API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
