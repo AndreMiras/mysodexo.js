@@ -1,6 +1,7 @@
 import assert from "assert";
 import fetch from "node-fetch";
 import * as index from "./index";
+import { ApiError } from "./errors";
 
 jest.mock("node-fetch", () => jest.fn());
 const fetchMock = fetch as unknown as jest.Mock;
@@ -50,7 +51,7 @@ describe("handleCodeMsg", () => {
   ])("raises on unmatching code (%s) or msg (%s)", (code, msg) => {
     const handleCodeMsg = index.handleCodeMsg;
     const jsonResponse = { code, msg };
-    const expected = assert.AssertionError;
+    const expected = ApiError;
     expect(() => {
       handleCodeMsg(jsonResponse);
     }).toThrow(expected);
@@ -156,6 +157,21 @@ describe("login", () => {
     const { cookie, accountInfo } = response;
     expect(fetchMock.mock.calls.length).toBe(1);
     expect(cookie).toEqual(expectedCookie);
+    expect(accountInfo).toEqual(loginResponse.response);
+  });
+});
+
+describe("loginFromSession", () => {
+  it("base", async () => {
+    const cookie = "PHPSESSID=0123456789abcdef0123456789";
+    const expectedCookie = "PHPSESSID=0123456789abcdef0123456789-new";
+    const extendedCookie = `${expectedCookie}; expires=Sat, 28-Jan-2023 13:37:00 GMT; Max-Age=7776000; path=/`;
+    mockFetch(loginResponse, extendedCookie);
+    const loginFromSession = index.loginFromSession;
+    const response = await loginFromSession(cookie);
+    const { cookie: newCookie, accountInfo } = response;
+    expect(fetchMock.mock.calls.length).toBe(1);
+    expect(newCookie).toEqual(expectedCookie);
     expect(accountInfo).toEqual(loginResponse.response);
   });
 });

@@ -1,4 +1,5 @@
 import read from "read";
+import { ApiError, ApiErrorCodes } from "./errors";
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -185,7 +186,7 @@ describe("getSessionOrLogin", () => {
     jest.unmock("fs");
   });
 
-  it("session file exists", () => {
+  it("session file exists", async () => {
     const expectedCookie = "cookieKey=cookieValue";
     const expectedDni = "123456789";
     const sessionInfo = { cookie: expectedCookie, dni: expectedDni };
@@ -193,11 +194,15 @@ describe("getSessionOrLogin", () => {
     jest.doMock("fs", () => ({
       readFileSync,
     }));
+    const loginFromSession = jest.fn((cookie) => sessionInfo);
+    jest.doMock("./index", () => ({
+      loginFromSession,
+    }));
     const { getSessionOrLogin } = requireCli();
-    const { cookie, dni } = getSessionOrLogin();
-    const { BASE_URL } = require("./constants");
+    const { cookie, dni } = await getSessionOrLogin();
     expect(cookie).toEqual(expectedCookie);
     expect(dni).toEqual(expectedDni);
+    expect(loginFromSession.mock.calls.length).toBe(1);
   });
 
   /*
@@ -214,6 +219,10 @@ describe("getSessionOrLogin", () => {
     jest.doMock("fs", () => ({
       readFileSync,
     }));
+    const loginFromSession = jest.fn();
+    jest.doMock("./index", () => ({
+      loginFromSession,
+    }));
     const expectedCookie = "cookieKey=cookieValue";
     const expectedDni = "123456789";
     const processLogin = mockProcessLogin(expectedCookie, expectedDni);
@@ -223,6 +232,37 @@ describe("getSessionOrLogin", () => {
     expect(processLogin.mock.calls.length).toBe(1);
     expect(cookie).toEqual(expectedCookie);
     expect(dni).toEqual(expectedDni);
+    expect(loginFromSession.mock.calls.length).toBe(0);
+  });
+
+  /*
+   * The `getSessionOrLogin()` function should fallback to login
+   * if the cached session expired.
+   * This test is skipped because of a Jest bug, refs:
+   * https://github.com/facebook/jest/issues/2549
+   */
+  it.skip("session expired", async () => {
+    const expectedCookie = "cookieKey=cookieValue";
+    const expectedDni = "123456789";
+    const processLogin = mockProcessLogin(expectedCookie, expectedDni);
+    const sessionInfo = { cookie: expectedCookie, dni: expectedDni };
+    const readFileSync = () => JSON.stringify(sessionInfo);
+    jest.doMock("fs", () => ({
+      readFileSync,
+    }));
+    const loginFromSession = jest.fn((cookie) => {
+      throw new ApiError("msg", ApiErrorCodes.SESSION_EXPIRED);
+    });
+    jest.doMock("./index", () => ({
+      loginFromSession,
+    }));
+    const cli = requireCli();
+    cli.processLogin = processLogin;
+    const { cookie, dni } = await cli.getSessionOrLogin();
+    expect(processLogin.mock.calls.length).toBe(1);
+    expect(cookie).toEqual(expectedCookie);
+    expect(dni).toEqual(expectedDni);
+    expect(loginFromSession.mock.calls.length).toBe(1);
   });
 
   /*
@@ -237,7 +277,7 @@ describe("getSessionOrLogin", () => {
       readFileSync,
     }));
     const { getSessionOrLogin } = requireCli();
-    expect(() => getSessionOrLogin()).toThrow(error);
+    await expect(getSessionOrLogin()).rejects.toThrow(error);
   });
 });
 

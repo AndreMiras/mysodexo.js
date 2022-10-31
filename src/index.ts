@@ -4,9 +4,11 @@ import fetch, { Response } from "node-fetch";
 import * as fs from "fs";
 import * as path from "path";
 import { BASE_URL } from "./constants";
+import { ApiError } from "./errors";
 import { GetClearPinResponse } from "./types";
 
 const LOGIN_ENDPOINT = "v3/connect/login";
+const LOGIN_FROM_SESSION_ENDPOINT = "v3/connect/loginFromSession";
 const GET_CARDS_ENDPOINT = "v3/card/getCards";
 const GET_DETAIL_CARD_ENDPOINT = "v2/card/getDetailCard";
 const GET_CLEAR_PIN_ENDPOINT = "v1/card/getClearPin";
@@ -46,14 +48,18 @@ const stripEndpoint = (endpoint: string) => endpoint.replace(/^\/+/, "");
 const getFullEndpointUrl = (endpoint: string, lang: string) =>
   `${BASE_URL}/${lang}/${stripEndpoint(endpoint)}`;
 
+const isResponseOk = ({ code, msg }: CodeMsg) =>
+  JSON.stringify({ code, msg }) ===
+  JSON.stringify({ code: JSON_RESPONSE_OK_CODE, msg: JSON_RESPONSE_OK_MSG });
+
 /*
  * Raise an error if any in the `jsonResponse`.
  */
 const handleCodeMsg = ({ code, msg }: CodeMsg) => {
-  assert.deepEqual(
-    { code, msg },
-    { code: JSON_RESPONSE_OK_CODE, msg: JSON_RESPONSE_OK_MSG }
-  );
+  isResponseOk({ code, msg }) ||
+    (() => {
+      throw new ApiError(msg || "", code || 0);
+    })();
 };
 
 const parseCookies = (response: Response): string => {
@@ -130,6 +136,20 @@ const login = async (email: string, password: string) => {
 };
 
 /*
+ * Login from session and return session and account info.
+ */
+const loginFromSession = async (cookies: string) => {
+  const endpoint = LOGIN_FROM_SESSION_ENDPOINT;
+  const jsonData = {};
+  const { response: accountInfo, cookie } = await post(
+    cookies,
+    endpoint,
+    jsonData
+  );
+  return { accountInfo, cookie };
+};
+
+/*
  * Return cards list and details using the cookie provided.
  */
 const getCards = async (cookie: string, dni: string) => {
@@ -189,6 +209,7 @@ export {
   stringifyLog,
   sessionPost,
   login,
+  loginFromSession,
   getCards,
   getDetailCard,
   getClearPin,

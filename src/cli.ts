@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 import * as api from "./index";
 import { BASE_URL } from "./constants";
+import { isApiError, isNodeError, ApiError, ApiErrorCodes } from "./errors";
 import read from "read";
 import * as path from "path";
 import * as fs from "fs";
 
 const APPLICATION_NAME = "mysodexo";
 const SESSION_CACHE_FILENAME = "session.cache";
-
-const isNodeError = (error: unknown): error is NodeJS.ErrnoException =>
-  error instanceof Error;
 
 const asyncRead = (options: any): Promise<string> =>
   new Promise((resolve, reject) =>
@@ -82,14 +80,23 @@ const processLogin = async () => {
   return { cookie, dni };
 };
 
+/**
+ * Should login if the session file storing the cookie doesn't exist or if the session has expired.
+ */
+const shouldLogin = (error: unknown): boolean =>
+  (isNodeError(error) && error.code === "ENOENT") ||
+  (isApiError(error) && error.code === ApiErrorCodes.SESSION_EXPIRED);
+
 /*
  * Retrieve session from cache or prompt login then store session.
  */
-const getSessionOrLogin = () => {
+const getSessionOrLogin = async () => {
   try {
-    return exports.getCachedSessionInfo();
+    const { cookie } = await exports.getCachedSessionInfo();
+    // check the session hasn't expired and retrieve fresh account info
+    return await api.loginFromSession(cookie);
   } catch (error: unknown) {
-    return isNodeError(error) && error.code === "ENOENT"
+    return shouldLogin(error)
       ? exports.processLogin()
       : (() => {
           throw error;
