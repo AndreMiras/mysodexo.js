@@ -136,17 +136,13 @@ const login = async (email: string, password: string) => {
 };
 
 /*
- * Login from session and return session and account info.
+ * Login from session and return account info.
  */
-const loginFromSession = async (cookies: string) => {
+const loginFromSession = async (cookie: string) => {
   const endpoint = LOGIN_FROM_SESSION_ENDPOINT;
   const jsonData = {};
-  const { response: accountInfo, cookie } = await post(
-    cookies,
-    endpoint,
-    jsonData
-  );
-  return { accountInfo, cookie };
+  const accountInfo = await sessionPost(cookie, endpoint, jsonData);
+  return accountInfo;
 };
 
 /*

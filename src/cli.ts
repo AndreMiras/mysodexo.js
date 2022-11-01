@@ -94,7 +94,8 @@ const getSessionOrLogin = async () => {
   try {
     const { cookie } = await exports.getCachedSessionInfo();
     // check the session hasn't expired and retrieve fresh account info
-    return await api.loginFromSession(cookie);
+    const { dni } = await api.loginFromSession(cookie);
+    return { cookie, dni };
   } catch (error: unknown) {
     return shouldLogin(error)
       ? exports.processLogin()

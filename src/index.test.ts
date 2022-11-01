@@ -164,14 +164,11 @@ describe("login", () => {
 describe("loginFromSession", () => {
   it("base", async () => {
     const cookie = "PHPSESSID=0123456789abcdef0123456789";
-    const expectedCookie = "PHPSESSID=0123456789abcdef0123456789-new";
-    const extendedCookie = `${expectedCookie}; expires=Sat, 28-Jan-2023 13:37:00 GMT; Max-Age=7776000; path=/`;
-    mockFetch(loginResponse, extendedCookie);
+    const extendedCookie = `${cookie}; expires=Sat, 28-Jan-2023 13:37:00 GMT; Max-Age=7776000; path=/`;
+    mockFetch(loginResponse);
     const loginFromSession = index.loginFromSession;
-    const response = await loginFromSession(cookie);
-    const { cookie: newCookie, accountInfo } = response;
+    const accountInfo = await loginFromSession(cookie);
     expect(fetchMock.mock.calls.length).toBe(1);
-    expect(newCookie).toEqual(expectedCookie);
     expect(accountInfo).toEqual(loginResponse.response);
   });
 });
