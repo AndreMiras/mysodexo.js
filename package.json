@@ -8,8 +8,8 @@
     "mysodexo": "dist/cli.js"
   },
   "files": [
-    "src/sodexows.mo2o.com_client-android.p12",
-    "dist/*.js"
+    "src",
+    "dist"
   ],
   "scripts": {
     "test": "node --require ts-node/register node_modules/.bin/jest --verbose --coverage src/*test.ts",
@@ -22,6 +22,8 @@
     "run:cli:inspect": "node --inspect --require ts-node/register src/cli.ts",
     "lint": "prettier --check src docs .github *.md",
     "format": "prettier --write src docs .github *.md",
+    "copy-files": "copyfiles --flat src/**/*.p12 dist/",
+    "postbuild": "yarn run copy-files",
     "build": "tsc"
   },
   "repository": {
@@ -46,6 +48,7 @@
     "@types/node-fetch": "^2.6.2",
     "@types/read": "^0.0.29",
     "babel-jest": "^29.2.1",
+    "copyfiles": "^2.4.1",
     "jest": "^29",
     "prettier": "^2.7.1",
     "ts-node": "^10.9.1",
