@@ -33,14 +33,16 @@ interface PostResponse {
 /*
  * Indented JSON.stringify() alias.
  */
-const stringify = (value: Record<string, any>) =>
-  JSON.stringify(value, null, "  ");
+const stringify = (
+  value: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+) => JSON.stringify(value, null, "  ");
 
 /*
  * Log value to console as a JSON string.
  */
-const stringifyLog = (value: Record<string, any>) =>
-  console.log(stringify(value)); // eslint-disable-line no-console
+const stringifyLog = (
+  value: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+) => console.log(stringify(value)); // eslint-disable-line no-console
 
 const stripEndpoint = (endpoint: string) => endpoint.replace(/^\/+/, "");
 
@@ -195,7 +197,7 @@ const main = async () => {
   stringifyLog(cardDetail);
 };
 
-const mainIsModule = (module: any, main: any) => main === module;
+const mainIsModule = (module: any, main: NodeModule) => main === module;
 mainIsModule(require.main, module) && main();
 
 export {

@@ -157,7 +157,7 @@ const main = (argv: string[]) => {
   fun();
 };
 
-const mainIsModule = (module: any, main: any) => main === module;
+const mainIsModule = (module: any, main: NodeModule) => main === module;
 
 export {
   promptLogin,
