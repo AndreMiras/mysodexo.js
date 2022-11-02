@@ -2,14 +2,11 @@
   "env": {
     "browser": true,
     "node": true,
-    "es6": true,
-    "jest/globals": true
+    "es6": true
   },
   "plugins": [
-    "jest"
+    "@typescript-eslint"
   ],
-  "extends": "eslint:recommended",
-  "parserOptions": {
-    "ecmaVersion": 2017
-  }
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser"
 }

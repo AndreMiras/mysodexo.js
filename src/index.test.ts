@@ -58,7 +58,7 @@ describe("handleCodeMsg", () => {
   });
 });
 
-const fetchResponse = (responseJson: any = {}, cookie: string = "") => ({
+const fetchResponse = (responseJson: any = {}, cookie = "") => ({
   ok: true,
   status: 200,
   headers: {
@@ -67,7 +67,7 @@ const fetchResponse = (responseJson: any = {}, cookie: string = "") => ({
   json: () => responseJson,
 });
 
-const mockFetch = (responseJson: any = {}, cookie: string = "") =>
+const mockFetch = (responseJson: any = {}, cookie = "") =>
   fetchMock.mockImplementation(() =>
     Promise.resolve(fetchResponse(responseJson, cookie))
   );
