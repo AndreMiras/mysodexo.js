@@ -1,4 +1,3 @@
-import read from "read";
 import { ApiError, ApiErrorCodes } from "./errors";
 
 beforeEach(() => {
@@ -23,6 +22,7 @@ const mockReadCredentials = (email: string, password: string) => {
 };
 
 const mockApiLogin = (apiLoginResponse: any) =>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   jest.fn((email, password) => apiLoginResponse);
 
 const mockProcessLogin = (cookie: string, dni: string) =>
@@ -107,7 +107,6 @@ describe("cacheSessionInfo", () => {
       writeFileSync,
     }));
     const { cacheSessionInfo } = requireCli();
-    const getCookieString = jest.fn();
     const cookie = "PHPSESSID=0123456789abcdef0123456789";
     const dni = "123456789";
     expect(cacheSessionInfo(cookie, dni)).toEqual(expected);
@@ -194,7 +193,7 @@ describe("getSessionOrLogin", () => {
     jest.doMock("fs", () => ({
       readFileSync,
     }));
-    const loginFromSession = jest.fn((cookie) => sessionInfo);
+    const loginFromSession = jest.fn(() => sessionInfo);
     jest.doMock("./index", () => ({
       loginFromSession,
     }));
@@ -210,7 +209,6 @@ describe("getSessionOrLogin", () => {
    * if session cache file isn't available.
    */
   it("session file does not exists", async () => {
-    const expected = undefined;
     const error: NodeJS.ErrnoException = new Error();
     error.code = "ENOENT";
     const readFileSync = () => {
@@ -251,7 +249,7 @@ describe("getSessionOrLogin", () => {
       readFileSync,
     }));
     const error = new ApiError("msg", ApiErrorCodes.SESSION_EXPIRED);
-    const loginFromSession = jest.fn((cookie) => {
+    const loginFromSession = jest.fn(() => {
       throw error;
     });
     jest.doMock("./index", () => ({
@@ -294,8 +292,6 @@ describe("processBalance", () => {
   });
 
   it("base", async () => {
-    const expected = undefined;
-    const expectedCookie = "cookieKey=cookieValue";
     const expectedDni = "123456789";
     const getSessionOrLogin = jest.fn(() => ({
       cookie: expectedCardNumber,
@@ -306,13 +302,13 @@ describe("processBalance", () => {
       cardNumber: expectedCardNumber,
     };
     const expectedCardList = [expectedCard];
-    const getCards = jest.fn((cookie, dni) => expectedCardList);
+    const getCards = jest.fn(() => expectedCardList);
     const expectedCardDetail = {
       cardBalance: 13.37,
       pan: "123456******1234",
     };
     const expectedCardsDetails = [expectedCardDetail];
-    const getDetailCard = jest.fn((cookie, cardNumber) => expectedCardDetail);
+    const getDetailCard = jest.fn(() => expectedCardDetail);
     const spyLog = jest.spyOn(console, "log").mockImplementation();
     jest.doMock("./index", () => ({
       getCards,

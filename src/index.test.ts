@@ -1,4 +1,3 @@
-import assert from "assert";
 import fetch from "node-fetch";
 import * as index from "./index";
 import { ApiError } from "./errors";
@@ -164,7 +163,6 @@ describe("login", () => {
 describe("loginFromSession", () => {
   it("base", async () => {
     const cookie = "PHPSESSID=0123456789abcdef0123456789";
-    const extendedCookie = `${cookie}; expires=Sat, 28-Jan-2023 13:37:00 GMT; Max-Age=7776000; path=/`;
     mockFetch(loginResponse);
     const loginFromSession = index.loginFromSession;
     const accountInfo = await loginFromSession(cookie);
@@ -312,7 +310,7 @@ describe("getClearPin", () => {
  * `options.url` objects.
  */
 const mockFetchPerUrl = (perUrlResponseBody: Record<string, any>) =>
-  fetchMock.mockImplementation((url, options) => {
+  fetchMock.mockImplementation((url) => {
     return Promise.resolve(fetchResponse(perUrlResponseBody[url]));
   });
 

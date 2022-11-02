@@ -5,7 +5,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { BASE_URL } from "./constants";
 import { ApiError } from "./errors";
-import { GetClearPinResponse } from "./types";
 
 const LOGIN_ENDPOINT = "v3/connect/login";
 const LOGIN_FROM_SESSION_ENDPOINT = "v3/connect/loginFromSession";

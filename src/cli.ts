@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import * as api from "./index";
-import { BASE_URL } from "./constants";
-import { isApiError, isNodeError, ApiError, ApiErrorCodes } from "./errors";
+import { isApiError, isNodeError, ApiErrorCodes } from "./errors";
 import read from "read";
 import * as path from "path";
 import * as fs from "fs";
