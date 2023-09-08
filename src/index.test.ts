@@ -1,6 +1,10 @@
 import fetch from "node-fetch";
 import * as index from "./index";
-import { LoginResponse, GetCardsResponse } from "./types";
+import {
+  LoginResponse,
+  GetCardsResponse,
+  GetDetailCardResponse,
+} from "./types";
 import { ApiError } from "./errors";
 
 jest.mock("node-fetch", () => jest.fn());
@@ -217,7 +221,7 @@ describe("getCards", () => {
   });
 });
 
-const getDetailCardResponse = {
+const getDetailCardResponse: GetDetailCardResponse = {
   code: 100,
   msg: "OK",
   response: {

@@ -88,6 +88,64 @@ interface GetCardsResponse extends BasicResponse {
   };
 }
 
+interface BalanceFis {
+  saldoDisponible: number;
+  apuntesPendientes: number;
+}
+
+interface CardDetail {
+  idCard: number;
+  cardNumber: string;
+  idCardPayProvider: number;
+  idBeneficiary: number;
+  idCardStatus: string;
+  employeeName: string;
+  printerName: string;
+  legalNumber: string;
+  cardBalance: number;
+  caducityDateCard: string;
+  cardStatus: string;
+  idCompany: number;
+  faceValue: number;
+  creationDate: string;
+  idAddress: number;
+  addressReference: string;
+  idCustomize: number;
+  perfil: string;
+  description: string;
+  itemType: number;
+  idProduct: number;
+  idContract: number;
+  pan: string;
+  cardStatusDate: string;
+  accountId: string;
+  limitPassed: number;
+  idProfile: number;
+  maxValueOfConsum: number;
+  limiteConsumo: number;
+  programFis: string;
+  hasChip: number;
+  balanceFis: BalanceFis;
+  arrFisToChange: Array<{
+    key: string;
+    value: string;
+  }>;
+  idFisToChange: string;
+  blockedAmount: string;
+  totalBalance: string;
+  maxLoad: number;
+  maxUsesDay: number;
+  infoBalanceRestriction: string;
+  dayRestriction: string;
+  useOnHoliday: string;
+}
+
+interface GetDetailCardResponse extends BasicResponse {
+  response: {
+    cardDetail: CardDetail;
+  };
+}
+
 export type {
   BasicResponse,
   GetClearPinResponse,
@@ -95,4 +153,7 @@ export type {
   LoginFunctionResponse,
   CardResponseItem,
   GetCardsResponse,
+  BalanceFis,
+  CardDetail,
+  GetDetailCardResponse,
 };

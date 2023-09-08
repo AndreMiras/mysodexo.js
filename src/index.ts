@@ -7,6 +7,7 @@ import {
   LoginResponse,
   LoginFunctionResponse,
   CardResponseItem,
+  CardDetail,
 } from "./types";
 import { BASE_URL } from "./constants";
 import { ApiError } from "./errors";
@@ -172,7 +173,10 @@ const getCards = async (
 /*
  * Return card details.
  */
-const getDetailCard = async (cookie: string, cardNumber: string) => {
+const getDetailCard = async (
+  cookie: string,
+  cardNumber: string
+): Promise<CardDetail> => {
   const endpoint = GET_DETAIL_CARD_ENDPOINT;
   const jsonData = { cardNumber };
   const { cardDetail } = await sessionPost(cookie, endpoint, jsonData);
@@ -213,7 +217,12 @@ const main = async () => {
 const mainIsModule = (module: any, main: NodeModule) => main === module;
 mainIsModule(require.main, module) && main();
 
-export type { LoginResponse, LoginFunctionResponse, CardResponseItem };
+export type {
+  LoginResponse,
+  LoginFunctionResponse,
+  CardResponseItem,
+  CardDetail,
+};
 
 export {
   getFullEndpointUrl,
