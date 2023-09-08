@@ -3,6 +3,7 @@ import https from "https";
 import fetch, { Response } from "node-fetch";
 import * as fs from "fs";
 import * as path from "path";
+import { LoginResponse, LoginFunctionResponse } from "./types";
 import { BASE_URL } from "./constants";
 import { ApiError } from "./errors";
 
@@ -119,7 +120,10 @@ const sessionPost = async (
 /*
  * Login with credentials and return session and account info.
  */
-const login = async (email: string, password: string) => {
+const login = async (
+  email: string,
+  password: string
+): Promise<LoginFunctionResponse> => {
   const endpoint = LOGIN_ENDPOINT;
   const cookies = "";
   const jsonData = {
@@ -133,7 +137,7 @@ const login = async (email: string, password: string) => {
     endpoint,
     jsonData
   );
-  return { accountInfo, cookie };
+  return { accountInfo: accountInfo as LoginResponse["response"], cookie };
 };
 
 /*
