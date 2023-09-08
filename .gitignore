@@ -1,6 +1,9 @@
 # custom
 *.swp
 
+# TypeDoc
+_docs/
+
 # dependencies
 /node_modules
 
