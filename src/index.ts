@@ -221,6 +221,7 @@ const mainIsModule = (module: any, main: NodeModule) => main === module;
 mainIsModule(require.main, module) && main();
 
 export type {
+  CodeMsg,
   LoginResponse,
   LoginFunctionResponse,
   CardResponseItem,
