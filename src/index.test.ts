@@ -4,6 +4,7 @@ import {
   LoginResponse,
   GetCardsResponse,
   GetDetailCardResponse,
+  GetClearPinResponse,
 } from "./types";
 import { ApiError } from "./errors";
 
@@ -291,25 +292,25 @@ describe("getDetailCard", () => {
   });
 });
 
+const getClearPinResponse: GetClearPinResponse = {
+  code: 100,
+  msg: "OK",
+  response: {
+    clearPin: {
+      pin: "1234",
+    },
+  },
+};
+
 describe("getClearPin", () => {
   it("base", async () => {
     const cookie = "";
     const cardNumber = "1234567897901234";
-    const expectedPin = "1234";
-    const responseBody = {
-      code: 100,
-      msg: "OK",
-      response: {
-        clearPin: {
-          pin: expectedPin,
-        },
-      },
-    };
-    mockFetch(responseBody);
+    mockFetch(getClearPinResponse);
     const getClearPin = index.getClearPin;
     const pin = await getClearPin(cookie, cardNumber);
     expect(fetchMock.mock.calls.length).toBe(1);
-    expect(pin).toEqual(expectedPin);
+    expect(pin).toEqual(getClearPinResponse.response.clearPin.pin);
   });
 });
 

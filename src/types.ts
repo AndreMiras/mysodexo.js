@@ -3,9 +3,11 @@ interface BasicResponse {
   msg: string;
 }
 
-interface GetClearPinResponse {
-  clearPin: {
-    pin: string;
+interface GetClearPinResponse extends BasicResponse {
+  response: {
+    clearPin: {
+      pin: string;
+    };
   };
 }
 

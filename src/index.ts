@@ -186,7 +186,10 @@ const getDetailCard = async (
 /*
  * Return card pin.
  */
-const getClearPin = async (cookie: string, cardNumber: string) => {
+const getClearPin = async (
+  cookie: string,
+  cardNumber: string
+): Promise<string> => {
   const endpoint = GET_CLEAR_PIN_ENDPOINT;
   const jsonData = { cardNumber };
   const { clearPin } = await sessionPost(cookie, endpoint, jsonData);
