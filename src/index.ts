@@ -143,11 +143,13 @@ const login = async (
 /*
  * Login from session and return account info.
  */
-const loginFromSession = async (cookie: string) => {
+const loginFromSession = async (
+  cookie: string
+): Promise<LoginResponse["response"]> => {
   const endpoint = LOGIN_FROM_SESSION_ENDPOINT;
   const jsonData = {};
   const accountInfo = await sessionPost(cookie, endpoint, jsonData);
-  return accountInfo;
+  return accountInfo as LoginResponse["response"];
 };
 
 /*
@@ -203,6 +205,8 @@ const main = async () => {
 
 const mainIsModule = (module: any, main: NodeModule) => main === module;
 mainIsModule(require.main, module) && main();
+
+export type { LoginResponse, LoginFunctionResponse };
 
 export {
   getFullEndpointUrl,
