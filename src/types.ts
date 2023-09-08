@@ -62,9 +62,37 @@ interface LoginFunctionResponse {
   cookie: string;
 }
 
+interface CardResponseItem {
+  service: string;
+  idCard: number;
+  cardNumber: string;
+  cardStatus: string;
+  idCardStatus: string;
+  pan: string;
+  caducityDateCard: string;
+  idProduct: number;
+  programFis: string;
+  hasChip: number;
+  idCompany: number;
+  arrFisToChange: Array<{
+    key: string;
+    value: string;
+  }>;
+  idFisToChange: string;
+  fisToChangeState: string;
+}
+
+interface GetCardsResponse extends BasicResponse {
+  response: {
+    listCard: CardResponseItem[];
+  };
+}
+
 export type {
   BasicResponse,
   GetClearPinResponse,
   LoginResponse,
   LoginFunctionResponse,
+  CardResponseItem,
+  GetCardsResponse,
 };

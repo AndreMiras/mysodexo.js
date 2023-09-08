@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import * as index from "./index";
-import { LoginResponse } from "./types";
+import { LoginResponse, GetCardsResponse } from "./types";
 import { ApiError } from "./errors";
 
 jest.mock("node-fetch", () => jest.fn());
@@ -175,7 +175,7 @@ describe("loginFromSession", () => {
   });
 });
 
-const getCardsResponse = {
+const getCardsResponse: GetCardsResponse = {
   code: 100,
   msg: "OK",
   response: {

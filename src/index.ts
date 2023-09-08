@@ -3,7 +3,11 @@ import https from "https";
 import fetch, { Response } from "node-fetch";
 import * as fs from "fs";
 import * as path from "path";
-import { LoginResponse, LoginFunctionResponse } from "./types";
+import {
+  LoginResponse,
+  LoginFunctionResponse,
+  CardResponseItem,
+} from "./types";
 import { BASE_URL } from "./constants";
 import { ApiError } from "./errors";
 
@@ -155,7 +159,10 @@ const loginFromSession = async (
 /*
  * Return cards list and details using the cookie provided.
  */
-const getCards = async (cookie: string, dni: string) => {
+const getCards = async (
+  cookie: string,
+  dni: string
+): Promise<CardResponseItem[]> => {
   const endpoint = GET_CARDS_ENDPOINT;
   const jsonData = { dni };
   const { listCard } = await sessionPost(cookie, endpoint, jsonData);
@@ -206,7 +213,7 @@ const main = async () => {
 const mainIsModule = (module: any, main: NodeModule) => main === module;
 mainIsModule(require.main, module) && main();
 
-export type { LoginResponse, LoginFunctionResponse };
+export type { LoginResponse, LoginFunctionResponse, CardResponseItem };
 
 export {
   getFullEndpointUrl,
